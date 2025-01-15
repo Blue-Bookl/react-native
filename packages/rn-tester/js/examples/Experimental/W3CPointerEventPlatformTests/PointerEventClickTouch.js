@@ -9,14 +9,14 @@
  */
 
 import type {PlatformTestComponentBaseProps} from '../PlatformTest/RNTesterPlatformTestTypes';
+import type {PlatformTestContext} from '../PlatformTest/RNTesterPlatformTestTypes';
 import type {PointerEvent} from 'react-native/Libraries/Types/CoreEventTypes';
 
-import {check_PointerEvent} from './PointerEventSupport';
 import RNTesterPlatformTest from '../PlatformTest/RNTesterPlatformTest';
+import {check_PointerEvent} from './PointerEventSupport';
 import * as React from 'react';
-import {useRef, useCallback} from 'react';
+import {useCallback, useRef} from 'react';
 import {StyleSheet, View} from 'react-native';
-import type {PlatformTestContext} from '../PlatformTest/RNTesterPlatformTestTypes';
 
 function checkClickEventProperties(
   assert_equals: PlatformTestContext['assert_equals'],
@@ -33,11 +33,6 @@ function checkClickEventProperties(
   assert_equals(event.nativeEvent.tiltX, 0, 'default tiltX is 0');
   assert_equals(event.nativeEvent.tiltY, 0, 'default tiltY is 0');
   assert_equals(event.nativeEvent.twist, 0, 'default twist is 0');
-  assert_equals(
-    event.nativeEvent.isPrimary,
-    false,
-    'default isPrimary is false',
-  );
 }
 
 function PointerEventClickTouchTestCase(props: PlatformTestComponentBaseProps) {

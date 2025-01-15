@@ -10,12 +10,9 @@
 
 'use strict';
 
-import type {RenderItemProps} from 'react-native/Libraries/Lists/VirtualizedList';
+import type {Item} from '../../components/ListExampleShared';
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
-const RNTesterPage = require('../../components/RNTesterPage');
-const React = require('react');
-
-const infoLog = require('react-native/Libraries/Utilities/infoLog');
+import type {RenderItemProps} from 'react-native/Libraries/Lists/VirtualizedList';
 
 const {
   FooterComponent,
@@ -28,9 +25,10 @@ const {
   pressItem,
   renderSmallSwitchOption,
 } = require('../../components/ListExampleShared');
-const {FlatList, StyleSheet, Text, View, Alert} = require('react-native');
-
-import type {Item} from '../../components/ListExampleShared';
+const RNTesterPage = require('../../components/RNTesterPage');
+const React = require('react');
+const {Alert, FlatList, StyleSheet, Text, View} = require('react-native');
+const infoLog = require('react-native/Libraries/Utilities/infoLog');
 
 class MultiColumnExample extends React.PureComponent<
   $FlowFixMeProps,
@@ -38,14 +36,14 @@ class MultiColumnExample extends React.PureComponent<
 > {
   state:
     | any
-    | {|
+    | {
         data: Array<Item>,
         filterText: string,
         fixedHeight: boolean,
         logViewable: boolean,
         numColumns: number,
         virtualized: boolean,
-      |} = {
+      } = {
     data: genNewerItems(1000),
     filterText: '',
     fixedHeight: true,

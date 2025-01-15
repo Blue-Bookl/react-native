@@ -22,6 +22,7 @@ import static com.facebook.react.bridge.ReactMarkerConstants.FABRIC_UPDATE_UI_MA
 import static com.facebook.react.bridge.ReactMarkerConstants.FABRIC_UPDATE_UI_MAIN_THREAD_START;
 
 import androidx.annotation.Nullable;
+import com.facebook.infer.annotation.Nullsafe;
 import com.facebook.react.bridge.ReactMarker;
 import com.facebook.react.bridge.ReactMarkerConstants;
 import java.util.ArrayList;
@@ -29,30 +30,30 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Nullsafe(Nullsafe.Mode.LOCAL)
 public class DevToolsReactPerfLogger implements ReactMarker.FabricMarkerListener {
 
   private final Map<Integer, FabricCommitPoint> mFabricCommitMarkers = new HashMap<>();
   private final List<DevToolsReactPerfLoggerListener> mDevToolsReactPerfLoggerListeners =
       new ArrayList<>();
 
-  public static final LongStreamingStats mStreamingCommitStats = new LongStreamingStats();
-  public static final LongStreamingStats mStreamingLayoutStats = new LongStreamingStats();
-  public static final LongStreamingStats mStreamingDiffStats = new LongStreamingStats();
-  public static final LongStreamingStats mStreamingTransactionEndStats = new LongStreamingStats();
-  public static final LongStreamingStats mStreamingBatchExecutionStats = new LongStreamingStats();
+  static final LongStreamingStats mStreamingCommitStats = new LongStreamingStats();
+  static final LongStreamingStats mStreamingLayoutStats = new LongStreamingStats();
+  static final LongStreamingStats mStreamingDiffStats = new LongStreamingStats();
+  static final LongStreamingStats mStreamingTransactionEndStats = new LongStreamingStats();
+  static final LongStreamingStats mStreamingBatchExecutionStats = new LongStreamingStats();
 
   public interface DevToolsReactPerfLoggerListener {
-
     void onFabricCommitEnd(FabricCommitPoint commitPoint);
   }
 
-  public static class FabricCommitPointData {
+  private static class FabricCommitPointData {
     private final long mTimeStamp;
     private final int mCounter;
 
     public FabricCommitPointData(long timeStamp, int counter) {
-      this.mTimeStamp = timeStamp;
-      this.mCounter = counter;
+      mTimeStamp = timeStamp;
+      mCounter = counter;
     }
 
     public long getTimeStamp() {
@@ -69,7 +70,7 @@ public class DevToolsReactPerfLogger implements ReactMarker.FabricMarkerListener
     private final Map<ReactMarkerConstants, FabricCommitPointData> mPoints = new HashMap<>();
 
     private FabricCommitPoint(int commitNumber) {
-      this.mCommitNumber = commitNumber;
+      mCommitNumber = commitNumber;
     }
 
     private void addPoint(ReactMarkerConstants key, FabricCommitPointData data) {

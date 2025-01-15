@@ -5,6 +5,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+// TODO T207169925: Migrate CatalystInstance to Reacthost and remove the Suppress("DEPRECATION")
+// annotation
+@file:Suppress("DEPRECATION")
+
 package com.facebook.react.views.textinput
 
 import android.graphics.Color
@@ -17,10 +21,11 @@ import android.util.DisplayMetrics
 import android.view.Gravity
 import android.view.inputmethod.EditorInfo
 import androidx.core.content.res.ResourcesCompat.ID_NULL
+import com.facebook.react.bridge.BridgeReactContext
 import com.facebook.react.bridge.CatalystInstance
 import com.facebook.react.bridge.JavaOnlyMap
-import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactTestHelper.createMockCatalystInstance
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
 import com.facebook.react.uimanager.DisplayMetricsHolder
 import com.facebook.react.uimanager.ReactStylesDiffMap
 import com.facebook.react.uimanager.ThemedReactContext
@@ -36,7 +41,7 @@ import org.robolectric.RuntimeEnvironment
 @RunWith(RobolectricTestRunner::class)
 class ReactTextInputPropertyTest {
 
-  private lateinit var context: ReactApplicationContext
+  private lateinit var context: BridgeReactContext
   private lateinit var catalystInstanceMock: CatalystInstance
   private lateinit var themedContext: ThemedReactContext
   private lateinit var manager: ReactTextInputManager
@@ -54,7 +59,8 @@ class ReactTextInputPropertyTest {
 
   @Before
   fun setup() {
-    context = ReactApplicationContext(RuntimeEnvironment.getApplication())
+    ReactNativeFeatureFlagsForTests.setUp()
+    context = BridgeReactContext(RuntimeEnvironment.getApplication())
     catalystInstanceMock = createMockCatalystInstance()
     context.initializeWithInstance(catalystInstanceMock)
     themedContext = ThemedReactContext(context, context.baseContext, null, ID_NULL)

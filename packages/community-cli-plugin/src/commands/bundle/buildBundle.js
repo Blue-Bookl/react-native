@@ -10,17 +10,18 @@
  */
 
 import type {Config} from '@react-native-community/cli-types';
-import type {RequestOptions} from 'metro/src/shared/types.flow';
 import type {ConfigT} from 'metro-config';
+import type {RequestOptions} from 'metro/src/shared/types.flow';
 
+import loadMetroConfig from '../../utils/loadMetroConfig';
+import parseKeyValueParamArray from '../../utils/parseKeyValueParamArray';
+import saveAssets from './saveAssets';
+import chalk from 'chalk';
+import {promises as fs} from 'fs';
 import Server from 'metro/src/Server';
 import metroBundle from 'metro/src/shared/output/bundle';
 import metroRamBundle from 'metro/src/shared/output/RamBundle';
 import path from 'path';
-import chalk from 'chalk';
-import saveAssets from './saveAssets';
-import loadMetroConfig from '../../utils/loadMetroConfig';
-import {logger} from '@react-native-community/cli-tools';
 
 export type BundleCommandArgs = {
   assetsDest?: string,
@@ -42,6 +43,7 @@ export type BundleCommandArgs = {
   verbose: boolean,
   unstableTransformProfile: string,
   indexedRamBundle?: boolean,
+  resolverOption?: Array<string>,
 };
 
 async function buildBundle(
@@ -64,14 +66,18 @@ async function buildBundleWithConfig(
   config: ConfigT,
   bundleImpl: typeof metroBundle | typeof metroRamBundle = metroBundle,
 ): Promise<void> {
+  const customResolverOptions = parseKeyValueParamArray(
+    args.resolverOption ?? [],
+  );
+
   if (config.resolver.platforms.indexOf(args.platform) === -1) {
-    logger.error(
-      `Invalid platform ${
+    console.error(
+      `${chalk.red('error')}: Invalid platform ${
         args.platform ? `"${chalk.bold(args.platform)}" ` : ''
       }selected.`,
     );
 
-    logger.info(
+    console.info(
       `Available platforms are: ${config.resolver.platforms
         .map(x => `"${chalk.bold(x)}"`)
         .join(
@@ -99,17 +105,24 @@ async function buildBundleWithConfig(
     minify: args.minify !== undefined ? args.minify : !args.dev,
     platform: args.platform,
     unstable_transformProfile: args.unstableTransformProfile,
+    customResolverOptions,
   };
   const server = new Server(config);
 
   try {
     const bundle = await bundleImpl.build(server, requestOpts);
 
+    // Ensure destination directory exists before saving the bundle
+    await fs.mkdir(path.dirname(args.bundleOutput), {
+      recursive: true,
+      mode: 0o755,
+    });
+
     // $FlowIgnore[class-object-subtyping]
     // $FlowIgnore[incompatible-call]
     // $FlowIgnore[prop-missing]
     // $FlowIgnore[incompatible-exact]
-    await bundleImpl.save(bundle, args, logger.info);
+    await bundleImpl.save(bundle, args, console.info);
 
     // Save the assets of the bundle
     const outputAssets = await server.getAssets({
@@ -126,7 +139,7 @@ async function buildBundleWithConfig(
       args.assetCatalogDest,
     );
   } finally {
-    server.end();
+    await server.end();
   }
 }
 

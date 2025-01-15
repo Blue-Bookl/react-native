@@ -31,11 +31,11 @@ const DRAWER_STATES = ['Idle', 'Dragging', 'Settling'];
 
 type DrawerStates = 'Idle' | 'Dragging' | 'Settling';
 
-type DrawerSlideEvent = $ReadOnly<{|
+type DrawerSlideEvent = $ReadOnly<{
   offset: number,
-|}>;
+}>;
 
-type Props = $ReadOnly<{|
+type Props = $ReadOnly<{
   accessibilityRole?: ?AccessibilityRole,
 
   /**
@@ -105,7 +105,7 @@ type Props = $ReadOnly<{|
   /**
    * The navigation view that will be rendered to the side of the screen and can be pulled in.
    */
-  renderNavigationView: () => React.Element<any>,
+  renderNavigationView: () => React.MixedElement,
 
   /**
    * Make the drawer take the entire screen and draw the background of the
@@ -116,11 +116,11 @@ type Props = $ReadOnly<{|
 
   children?: React.Node,
   style?: ?ViewStyleProp,
-|}>;
+}>;
 
-type State = {|
-  statusBarBackgroundColor: ColorValue,
-|};
+type State = {
+  drawerOpened: boolean,
+};
 
 /**
  * React component that wraps the platform `DrawerLayout` (Android only). The
@@ -168,7 +168,9 @@ class DrawerLayoutAndroid extends React.Component<Props, State> {
       React.ElementRef<typeof AndroidDrawerLayoutNativeComponent>,
     >();
 
-  state: State = {statusBarBackgroundColor: null};
+  state: State = {
+    drawerOpened: false,
+  };
 
   render(): React.Node {
     const {
@@ -189,6 +191,7 @@ class DrawerLayoutAndroid extends React.Component<Props, State> {
             backgroundColor: drawerBackgroundColor,
           },
         ]}
+        pointerEvents={this.state.drawerOpened ? 'auto' : 'none'}
         collapsable={false}>
         {renderNavigationView()}
         {drawStatusBar && <View style={styles.drawerStatusBar} />}
@@ -245,12 +248,18 @@ class DrawerLayoutAndroid extends React.Component<Props, State> {
   };
 
   _onDrawerOpen = () => {
+    this.setState({
+      drawerOpened: true,
+    });
     if (this.props.onDrawerOpen) {
       this.props.onDrawerOpen();
     }
   };
 
   _onDrawerClose = () => {
+    this.setState({
+      drawerOpened: false,
+    });
     if (this.props.onDrawerClose) {
       this.props.onDrawerClose();
     }

@@ -26,7 +26,7 @@ cd packages/rn-tester
 yarn clean-ios
 ```
 
-If you are still having a problem after doing the clean up (which can happen if you have built RNTester with older React Native versions where files were generated inside the react-native folder.), the best way might be to clean-install react-native (e.g. remove node_modules and yarn install).
+If you are still having a problem after doing the clean up (which can happen if you have built RNTester with older React Native versions where files were generated inside the react-native folder.), the best way might be to clean-install react-native (e.g. remove node_modules and yarn install). If after cleaning up, you are still having issues, you might also want to try `RCT_NEW_ARCH_ENABLED=0 bundle exec pod install` to disable the new architecture as it might be conflicting.
 
 Both macOS and Xcode are required.
 1. `cd packages/rn-tester`
@@ -45,35 +45,26 @@ If you own a Mac laptop with Apple Silicon, you need to run some different comma
 
 You'll need to have all the [prerequisites](https://reactnative.dev/contributing/how-to-build-from-source#prerequisites) (SDK, NDK) for Building React Native installed.
 
-Start an Android emulator.
+You can build and run RN-Tester by using this command from the root of the repo:
+
+```sh
+yarn android
+```
+
+If you wish to use JSC instead you should invoke:
+
 ```sh
 cd packages/rn-tester
-# In order to use Hermes engine, run `yarn install-android-hermes` instead.
 yarn install-android-jsc
 yarn start
 ```
 
-_Note: Building for the first time can take a while._
+> [!NOTE]
+> Building for the first time can take a while.
 
-Open the RNTester app in your emulator.
-If you want to use a physical device, run `adb devices`, then `adb -s <device name> reverse tcp:8081 tcp:8081`.
+If you're using a physical device, run `adb reverse tcp:8081 tcp:8081` to make sure the device can access Metro.
+
 See [Running on Device](https://reactnative.dev/docs/running-on-device) for additional instructions on using a physical device.
-
-### Running with Buck
-
-Follow the same setup as running with gradle.
-
-Install Buck from [here](https://buckbuild.com/setup/install.html).
-
-Run the following commands from the react-native folder:
-```sh
-./gradlew :ReactAndroid:packageReactNdkLibsForBuck
-buck fetch rntester
-buck install -r rntester
-./scripts/packager.sh
-```
-
-_Note: The native libs are still built using gradle. Full build with buck is coming soon(tm)._
 
 ## Building from source
 

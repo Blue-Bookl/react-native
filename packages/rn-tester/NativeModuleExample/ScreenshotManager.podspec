@@ -21,15 +21,7 @@ Pod::Spec.new do |s|
 
   s.source_files    = "**/*.{h,m,mm,swift}"
   s.requires_arc    = true
+  s.framework = ["UIKit", "CoreGraphics"]
 
   install_modules_dependencies(s)
-
-  # s.dependency "..."
-
-  # Enable codegen for this library
-  use_react_native_codegen!(s, {
-    :react_native_path => "../../react-native",
-    :js_srcs_dir => "./",
-    :library_type => "modules",
-  })
 end

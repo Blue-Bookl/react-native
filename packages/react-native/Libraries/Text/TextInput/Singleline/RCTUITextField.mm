@@ -15,6 +15,8 @@
 @implementation RCTUITextField {
   RCTBackedTextFieldDelegateAdapter *_textInputDelegateAdapter;
   NSDictionary<NSAttributedStringKey, id> *_defaultTextAttributes;
+  NSArray<UIBarButtonItemGroup *> *_initialValueLeadingBarButtonGroups;
+  NSArray<UIBarButtonItemGroup *> *_initialValueTrailingBarButtonGroups;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -27,6 +29,8 @@
 
     _textInputDelegateAdapter = [[RCTBackedTextFieldDelegateAdapter alloc] initWithTextField:self];
     _scrollEnabled = YES;
+    _initialValueLeadingBarButtonGroups = nil;
+    _initialValueTrailingBarButtonGroups = nil;
   }
 
   return self;
@@ -115,6 +119,28 @@
   self.attributedText = originalText;
 }
 
+- (void)setDisableKeyboardShortcuts:(BOOL)disableKeyboardShortcuts
+{
+#if TARGET_OS_IOS
+  // Initialize the initial values only once
+  if (_initialValueLeadingBarButtonGroups == nil) {
+    // Capture initial values of leading and trailing button groups
+    _initialValueLeadingBarButtonGroups = self.inputAssistantItem.leadingBarButtonGroups;
+    _initialValueTrailingBarButtonGroups = self.inputAssistantItem.trailingBarButtonGroups;
+  }
+
+  if (disableKeyboardShortcuts) {
+    self.inputAssistantItem.leadingBarButtonGroups = @[];
+    self.inputAssistantItem.trailingBarButtonGroups = @[];
+  } else {
+    // Restore the initial values
+    self.inputAssistantItem.leadingBarButtonGroups = _initialValueLeadingBarButtonGroups;
+    self.inputAssistantItem.trailingBarButtonGroups = _initialValueTrailingBarButtonGroups;
+  }
+  _disableKeyboardShortcuts = disableKeyboardShortcuts;
+#endif
+}
+
 #pragma mark - Placeholder
 
 - (NSDictionary<NSAttributedStringKey, id> *)_placeholderTextAttributes
@@ -140,6 +166,19 @@
   }
 
   return [super canPerformAction:action withSender:sender];
+}
+
+- (void)buildMenuWithBuilder:(id<UIMenuBuilder>)builder
+{
+#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 170000
+  if (@available(iOS 17.0, *)) {
+    if (_contextMenuHidden) {
+      [builder removeMenuForIdentifier:UIMenuAutoFill];
+    }
+  }
+#endif
+
+  [super buildMenuWithBuilder:builder];
 }
 
 #pragma mark - Dictation
@@ -199,6 +238,11 @@
   }
 
   [super setSelectedTextRange:selectedTextRange];
+}
+
+- (void)scrollRangeToVisible:(NSRange)range
+{
+  // Singleline TextInput does not require scrolling after calling setSelectedTextRange (PR 38679).
 }
 
 - (void)paste:(id)sender

@@ -10,10 +10,10 @@
 
 'use strict';
 
-const React = require('react');
 const {
   default: SampleLegacyModuleExample,
 } = require('./SampleLegacyModuleExample');
+const React = require('react');
 
 exports.displayName = (undefined: ?string);
 exports.title = 'Legacy Native Module';
@@ -22,7 +22,7 @@ exports.description = 'Usage of legacy Native Module';
 exports.examples = [
   {
     title: 'SampleLegacyModule',
-    render: function (): React.Element<any> {
+    render: function (): React.MixedElement {
       return <SampleLegacyModuleExample />;
     },
   },

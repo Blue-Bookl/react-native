@@ -109,6 +109,29 @@ describe('resolveAssetSource', () => {
         },
       );
     });
+
+    it('respects query parameters', () => {
+      expectResolvesAsset(
+        {
+          __packager_asset: true,
+          fileSystemLocation: '/root/app/assets/module/a',
+          httpServerLocation: '/assets?unstable_path=./module/a',
+          width: 100,
+          height: 200,
+          scales: [1, 2, 3],
+          hash: '5b6f00f',
+          name: 'logo',
+          type: 'png',
+        },
+        {
+          __packager_asset: true,
+          width: 100,
+          height: 200,
+          uri: 'http://10.0.0.1:8081/assets?unstable_path=./module/a/logo@2x.png?platform=ios&hash=5b6f00f',
+          scale: 2,
+        },
+      );
+    });
   });
 
   describe('bundle was loaded from file on iOS', () => {
@@ -293,7 +316,7 @@ describe('resolveAssetSource', () => {
       Platform.OS = 'android';
     });
 
-    it('uses bundled source, event when js is sideloaded', () => {
+    it('uses bundled source, even when js is sideloaded', () => {
       resolveAssetSource.setCustomSourceTransformer(resolver =>
         resolver.resourceIdentifierWithoutScale(),
       );
@@ -314,6 +337,64 @@ describe('resolveAssetSource', () => {
           width: 100,
           height: 200,
           uri: 'awesomemodule_subdir_logo1_',
+          scale: 1,
+        },
+      );
+    });
+
+    it('can chain multiple custom source transformers', () => {
+      resolveAssetSource.addCustomSourceTransformer(resolver => {
+        if (resolver.asset.type === 'gif') {
+          return resolver.fromSource(`my_gif_file`);
+        }
+        return null;
+      });
+
+      resolveAssetSource.addCustomSourceTransformer(resolver => {
+        if (resolver.asset.type === 'png') {
+          return resolver.fromSource(`my_png_file`);
+        }
+        return null;
+      });
+
+      const pngAsset = {
+        __packager_asset: true,
+        fileSystemLocation: '/root/app/module/a',
+        httpServerLocation: '/assets/AwesomeModule/Subdir',
+        width: 100,
+        height: 200,
+        scales: [1],
+        hash: '5b6f00f',
+        name: '!@Logo#1_\u20ac',
+        type: 'png',
+      };
+
+      expectResolvesAsset(pngAsset, {
+        __packager_asset: true,
+        width: 100,
+        height: 200,
+        uri: 'my_png_file',
+        scale: 1,
+      });
+
+      expectResolvesAsset(
+        {...pngAsset, type: 'gif'},
+        {
+          __packager_asset: true,
+          width: 100,
+          height: 200,
+          uri: 'my_gif_file',
+          scale: 1,
+        },
+      );
+
+      expectResolvesAsset(
+        {...pngAsset, type: 'jpg'},
+        {
+          __packager_asset: true,
+          width: 100,
+          height: 200,
+          uri: 'file:///sdcard/Path/To/Simulator/drawable-mdpi/awesomemodule_subdir_logo1_.jpg',
           scale: 1,
         },
       );

@@ -8,7 +8,6 @@
 #pragma once
 
 #include <yoga/algorithm/FlexDirection.h>
-#include <yoga/algorithm/ResolveValue.h>
 #include <yoga/enums/Dimension.h>
 #include <yoga/enums/FlexDirection.h>
 #include <yoga/node/Node.h>
@@ -20,31 +19,34 @@ namespace facebook::yoga {
 inline float paddingAndBorderForAxis(
     const yoga::Node* const node,
     const FlexDirection axis,
+    const Direction direction,
     const float widthSize) {
-  // The total padding/border for a given axis does not depend on the direction
-  // so hardcoding LTR here to avoid piping direction to this function
-  return node->getInlineStartPaddingAndBorder(axis, Direction::LTR, widthSize) +
-      node->getInlineEndPaddingAndBorder(axis, Direction::LTR, widthSize);
+  return node->style().computeInlineStartPaddingAndBorder(
+             axis, direction, widthSize) +
+      node->style().computeInlineEndPaddingAndBorder(
+          axis, direction, widthSize);
 }
 
 inline FloatOptional boundAxisWithinMinAndMax(
     const yoga::Node* const node,
+    const Direction direction,
     const FlexDirection axis,
     const FloatOptional value,
-    const float axisSize) {
+    const float axisSize,
+    const float widthSize) {
   FloatOptional min;
   FloatOptional max;
 
   if (isColumn(axis)) {
-    min = yoga::resolveValue(
-        node->getStyle().minDimension(Dimension::Height), axisSize);
-    max = yoga::resolveValue(
-        node->getStyle().maxDimension(Dimension::Height), axisSize);
+    min = node->style().resolvedMinDimension(
+        direction, Dimension::Height, axisSize, widthSize);
+    max = node->style().resolvedMaxDimension(
+        direction, Dimension::Height, axisSize, widthSize);
   } else if (isRow(axis)) {
-    min = yoga::resolveValue(
-        node->getStyle().minDimension(Dimension::Width), axisSize);
-    max = yoga::resolveValue(
-        node->getStyle().maxDimension(Dimension::Width), axisSize);
+    min = node->style().resolvedMinDimension(
+        direction, Dimension::Width, axisSize, widthSize);
+    max = node->style().resolvedMaxDimension(
+        direction, Dimension::Width, axisSize, widthSize);
   }
 
   if (max >= FloatOptional{0} && value > max) {
@@ -63,13 +65,15 @@ inline FloatOptional boundAxisWithinMinAndMax(
 inline float boundAxis(
     const yoga::Node* const node,
     const FlexDirection axis,
+    const Direction direction,
     const float value,
     const float axisSize,
     const float widthSize) {
   return yoga::maxOrDefined(
-      boundAxisWithinMinAndMax(node, axis, FloatOptional{value}, axisSize)
+      boundAxisWithinMinAndMax(
+          node, direction, axis, FloatOptional{value}, axisSize, widthSize)
           .unwrap(),
-      paddingAndBorderForAxis(node, axis, widthSize));
+      paddingAndBorderForAxis(node, axis, direction, widthSize));
 }
 
 } // namespace facebook::yoga

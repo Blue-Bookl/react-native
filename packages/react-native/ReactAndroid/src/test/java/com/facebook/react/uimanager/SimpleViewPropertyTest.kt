@@ -5,13 +5,16 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+// TODO T207169925: Migrate CatalystInstance to Reacthost and remove the Suppress("DEPRECATION")
+// annotation
+@file:Suppress("DEPRECATION")
+
 package com.facebook.react.uimanager
 
-import android.graphics.drawable.ColorDrawable
 import android.view.View
+import com.facebook.react.bridge.BridgeReactContext
 import com.facebook.react.bridge.CatalystInstance
 import com.facebook.react.bridge.JavaOnlyMap
-import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactTestHelper.createMockCatalystInstance
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.touch.JSResponderHandler
@@ -27,12 +30,14 @@ import org.robolectric.RuntimeEnvironment
 @RunWith(RobolectricTestRunner::class)
 class SimpleViewPropertyTest {
 
-  private class ConcreteViewManager : SimpleViewManager<View?>() {
-    @Suppress("UNUSED_PARAMETER") @ReactProp(name = "foo") fun setFoo(view: View, foo: Boolean) {}
+  private class ConcreteViewManager : SimpleViewManager<View>() {
+    @Suppress("UNUSED_PARAMETER")
+    @ReactProp(name = "foo")
+    fun setFoo(view: View, foo: Boolean) = Unit
 
     @Suppress("UNUSED_PARAMETER")
     @ReactProp(name = "bar")
-    fun setBar(view: View, bar: ReadableMap?) {}
+    fun setBar(view: View, bar: ReadableMap?) = Unit
 
     override fun createViewInstance(reactContext: ThemedReactContext): View {
       return View(reactContext)
@@ -43,14 +48,14 @@ class SimpleViewPropertyTest {
     }
   }
 
-  private lateinit var context: ReactApplicationContext
+  private lateinit var context: BridgeReactContext
   private lateinit var catalystInstanceMock: CatalystInstance
   private lateinit var themedContext: ThemedReactContext
   private lateinit var manager: ConcreteViewManager
 
   @Before
   fun setup() {
-    context = ReactApplicationContext(RuntimeEnvironment.getApplication())
+    context = BridgeReactContext(RuntimeEnvironment.getApplication())
     catalystInstanceMock = createMockCatalystInstance()
     context.initializeWithInstance(catalystInstanceMock)
     themedContext = ThemedReactContext(context, context, null, surfaceId)
@@ -70,17 +75,6 @@ class SimpleViewPropertyTest {
     Assertions.assertThat(view.alpha).isEqualTo(0.31f, Assertions.offset(1e-5f))
     manager.updateProperties(view, buildStyles("opacity", null))
     Assertions.assertThat(view.alpha).isEqualTo(1.0f)
-  }
-
-  @Test
-  fun testBackgroundColor() {
-    val view = manager.createView(viewTag, themedContext, buildStyles(), null, JSResponderHandler())
-    manager.updateProperties(view, buildStyles())
-    Assertions.assertThat(view.background).isEqualTo(null)
-    manager.updateProperties(view, buildStyles("backgroundColor", 12))
-    Assertions.assertThat((view.background as ColorDrawable).color).isEqualTo(12)
-    manager.updateProperties(view, buildStyles("backgroundColor", null))
-    Assertions.assertThat((view.background as ColorDrawable).color).isEqualTo(0)
   }
 
   @Test

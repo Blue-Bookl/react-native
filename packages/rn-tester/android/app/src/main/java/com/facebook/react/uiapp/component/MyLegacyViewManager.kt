@@ -10,7 +10,6 @@ package com.facebook.react.uiapp.component
 import android.graphics.Color
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableArray
-import com.facebook.react.common.MapBuilder
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
@@ -27,7 +26,7 @@ internal class MyLegacyViewManager(reactContext: ReactApplicationContext) :
   override fun getName(): String = REACT_CLASS
 
   override fun createViewInstance(themedReactContext: ThemedReactContext): MyNativeView =
-      MyNativeView(themedReactContext).apply { setBackgroundColor(Color.RED) }
+      MyNativeView(themedReactContext)
 
   @ReactProp(name = ViewProps.OPACITY, defaultFloat = 1f)
   override fun setOpacity(view: MyNativeView, opacity: Float) {
@@ -35,27 +34,28 @@ internal class MyLegacyViewManager(reactContext: ReactApplicationContext) :
   }
 
   @ReactProp(name = ViewProps.COLOR)
-  fun setColor(view: MyNativeView, color: String) {
-    view.setBackgroundColor(Color.parseColor(color))
-  }
+  fun setColor(view: MyNativeView, color: String?): Unit =
+      when (color) {
+        null -> view.setBackgroundColor(Color.TRANSPARENT)
+        else -> view.setBackgroundColor(Color.parseColor(color))
+      }
 
   @ReactProp(name = "cornerRadius")
   fun setCornerRadius(view: MyNativeView, cornerRadius: Float) {
-    if (cornerRadius !== null) {
-      view.setCornerRadius(cornerRadius)
-    }
+    view.setCornerRadius(cornerRadius)
   }
 
   override fun getExportedViewConstants(): Map<String, Any> = mapOf("PI" to 3.14)
 
   override fun getExportedCustomBubblingEventTypeConstants(): Map<String, Any> {
-    return MapBuilder.builder<String, Any>()
-        .put(
-            "onColorChanged",
-            MapBuilder.of(
-                "phasedRegistrationNames",
-                MapBuilder.of("bubbled", "onColorChanged", "captured", "onColorChangedCapture")))
-        .build()
+    return mapOf(
+        "onColorChanged" to
+            mapOf(
+                "phasedRegistrationNames" to
+                    mapOf(
+                        "bubbled" to "onColorChanged",
+                        "captured" to "onColorChangedCapture",
+                    )))
   }
 
   override fun receiveCommand(view: MyNativeView, commandId: String, args: ReadableArray?) {
@@ -65,21 +65,35 @@ internal class MyLegacyViewManager(reactContext: ReactApplicationContext) :
     }
   }
 
+  @Deprecated("Deprecated in Java")
   @Suppress("DEPRECATION") // We intentionally want to test against the legacy API here.
   override fun receiveCommand(view: MyNativeView, commandId: Int, args: ReadableArray?) {
     when (commandId) {
       COMMAND_CHANGE_BACKGROUND_COLOR -> {
-        val sentColor: Int = Color.parseColor(args?.getString(0))
+        val sentColor = Color.parseColor(args?.getString(0))
         view.setBackgroundColor(sentColor)
+      }
+      COMMAND_ADD_OVERLAYS -> {
+        val overlayColors = checkNotNull(args?.getArray(0))
+        view.addOverlays(overlayColors)
+      }
+      COMMAND_REMOVE_OVERLAYS -> {
+        view.removeOverlays()
       }
     }
   }
 
   override fun getCommandsMap(): Map<String, Int> =
-      mapOf("changeBackgroundColor" to COMMAND_CHANGE_BACKGROUND_COLOR)
+      mapOf(
+          "changeBackgroundColor" to COMMAND_CHANGE_BACKGROUND_COLOR,
+          "addOverlays" to COMMAND_ADD_OVERLAYS,
+          "removeOverlays" to COMMAND_REMOVE_OVERLAYS,
+      )
 
   companion object {
     const val REACT_CLASS = "RNTMyLegacyNativeView"
-    const val COMMAND_CHANGE_BACKGROUND_COLOR = 42
+    const val COMMAND_CHANGE_BACKGROUND_COLOR = 1
+    const val COMMAND_ADD_OVERLAYS = 2
+    const val COMMAND_REMOVE_OVERLAYS = 3
   }
 }

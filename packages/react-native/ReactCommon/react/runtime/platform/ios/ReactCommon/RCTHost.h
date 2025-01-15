@@ -9,7 +9,7 @@
 
 #import <React/RCTDefines.h>
 #import <react/renderer/core/ReactPrimitives.h>
-#import <react/runtime/JSEngineInstance.h>
+#import <react/runtime/JSRuntimeFactory.h>
 
 #import "RCTInstance.h"
 
@@ -21,30 +21,30 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol RCTTurboModuleManagerDelegate;
 
+typedef NSURL *_Nullable (^RCTHostBundleURLProvider)(void);
+
 // Runtime API
 
 @protocol RCTHostDelegate <NSObject>
 
+- (void)hostDidStart:(RCTHost *)host;
+
+@optional
+- (void)loadBundleAtURL:(NSURL *)sourceURL
+             onProgress:(RCTSourceLoadProgressBlock)onProgress
+             onComplete:(RCTSourceLoadBlock)loadCallback;
+
+// TODO(T205780509): Remove this api in react native v0.78
+// The bridgeless js error handling api will just call into exceptionsmanager directly
 - (void)host:(RCTHost *)host
     didReceiveJSErrorStack:(NSArray<NSDictionary<NSString *, id> *> *)stack
                    message:(NSString *)message
+           originalMessage:(NSString *_Nullable)originalMessage
+                      name:(NSString *_Nullable)name
+            componentStack:(NSString *_Nullable)componentStack
                exceptionId:(NSUInteger)exceptionId
-                   isFatal:(BOOL)isFatal;
-
-- (void)hostDidStart:(RCTHost *)host;
-
-@end
-
-/**
- * This is a private protocol used to configure internal behavior of the runtime.
- * DO NOT USE THIS OUTSIDE OF THE REACT NATIVE CODEBASE.
- */
-@protocol RCTHostDelegateInternal <NSObject>
-
-// TODO(T166383606): Remove this method when we remove the legacy runtime scheduler or we have access to
-// ReactNativeConfig before we initialize it.
-- (BOOL)useModernRuntimeScheduler:(RCTHost *)host;
-
+                   isFatal:(BOOL)isFatal
+                 extraData:(NSDictionary<NSString *, id> *)extraData __attribute__((deprecated));
 @end
 
 @protocol RCTHostRuntimeDelegate <NSObject>
@@ -53,16 +53,30 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-typedef std::shared_ptr<facebook::react::JSEngineInstance> (^RCTHostJSEngineProvider)(void);
+typedef std::shared_ptr<facebook::react::JSRuntimeFactory> (^RCTHostJSEngineProvider)(void);
 
 @interface RCTHost : NSObject
+
+- (instancetype)initWithBundleURLProvider:(RCTHostBundleURLProvider)provider
+                             hostDelegate:(id<RCTHostDelegate>)hostDelegate
+               turboModuleManagerDelegate:(id<RCTTurboModuleManagerDelegate>)turboModuleManagerDelegate
+                         jsEngineProvider:(RCTHostJSEngineProvider)jsEngineProvider
+                            launchOptions:(nullable NSDictionary *)launchOptions NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithBundleURL:(NSURL *)bundleURL
                      hostDelegate:(id<RCTHostDelegate>)hostDelegate
        turboModuleManagerDelegate:(id<RCTTurboModuleManagerDelegate>)turboModuleManagerDelegate
-                 jsEngineProvider:(RCTHostJSEngineProvider)jsEngineProvider NS_DESIGNATED_INITIALIZER;
+                 jsEngineProvider:(RCTHostJSEngineProvider)jsEngineProvider
+                    launchOptions:(nullable NSDictionary *)launchOptions __deprecated;
+
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @property (nonatomic, weak, nullable) id<RCTHostRuntimeDelegate> runtimeDelegate;
+
+@property (nonatomic, readonly) RCTSurfacePresenter *surfacePresenter;
+
+@property (nonatomic, readonly) RCTModuleRegistry *moduleRegistry;
 
 - (void)start;
 
@@ -75,12 +89,6 @@ typedef std::shared_ptr<facebook::react::JSEngineInstance> (^RCTHostJSEngineProv
                                 initialProperties:(NSDictionary *)properties;
 
 - (RCTFabricSurface *)createSurfaceWithModuleName:(NSString *)moduleName initialProperties:(NSDictionary *)properties;
-
-- (RCTSurfacePresenter *)getSurfacePresenter;
-
-// Native module API
-
-- (RCTModuleRegistry *)getModuleRegistry;
 
 @end
 

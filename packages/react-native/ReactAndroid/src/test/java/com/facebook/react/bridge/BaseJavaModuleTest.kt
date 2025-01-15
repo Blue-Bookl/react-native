@@ -7,7 +7,8 @@
 
 package com.facebook.react.bridge
 
-import com.facebook.react.internal.turbomodule.core.interfaces.TurboModule
+import com.facebook.react.turbomodule.core.interfaces.TurboModule
+import com.facebook.testutils.shadows.ShadowNativeLoader
 import com.facebook.testutils.shadows.ShadowSoLoader
 import org.junit.Before
 import org.junit.Test
@@ -18,7 +19,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 /** Tests for [BaseJavaModule] and [JavaModuleWrapper] */
-@Config(shadows = [ShadowSoLoader::class])
+@Config(shadows = [ShadowSoLoader::class, ShadowNativeLoader::class])
 @RunWith(RobolectricTestRunner::class)
 class BaseJavaModuleTest {
   private lateinit var methods: List<JavaModuleWrapper.MethodDescriptor>
@@ -81,9 +82,9 @@ class BaseJavaModuleTest {
   private class MethodsModule : BaseJavaModule() {
     override fun getName(): String = "Methods"
 
-    @ReactMethod fun regularMethod(a: String?, b: Int?) {}
+    @ReactMethod fun regularMethod(a: String?, b: Int?) = Unit
 
-    @ReactMethod fun asyncMethod(a: Int, p: Promise) {}
+    @ReactMethod fun asyncMethod(a: Int, p: Promise) = Unit
 
     @ReactMethod(isBlockingSynchronousMethod = true) fun syncMethod(a: Int, b: Int): Int = a + b
   }
@@ -95,6 +96,6 @@ class BaseJavaModuleTest {
   private inner class GeneratedMethodsModule : NativeTestGeneratedModuleSpec() {
     override fun getName(): String = "GeneratedMethods"
 
-    override fun generatedMethod(a: String?, b: Int?) {}
+    override fun generatedMethod(a: String?, b: Int?) = Unit
   }
 }

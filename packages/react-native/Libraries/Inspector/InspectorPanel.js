@@ -10,9 +10,10 @@
 
 'use strict';
 
-import type {ViewStyleProp} from '../StyleSheet/StyleSheet';
+import type {ElementsHierarchy, InspectedElement} from './Inspector';
 
 import SafeAreaView from '../Components/SafeAreaView/SafeAreaView';
+import React from 'react';
 
 const ScrollView = require('../Components/ScrollView/ScrollView');
 const TouchableHighlight = require('../Components/Touchable/TouchableHighlight');
@@ -22,9 +23,8 @@ const Text = require('../Text/Text');
 const ElementProperties = require('./ElementProperties');
 const NetworkOverlay = require('./NetworkOverlay');
 const PerformanceOverlay = require('./PerformanceOverlay');
-const React = require('react');
 
-type Props = $ReadOnly<{|
+type Props = $ReadOnly<{
   devtoolsIsOpen: boolean,
   inspecting: boolean,
   setInspecting: (val: boolean) => void,
@@ -34,23 +34,11 @@ type Props = $ReadOnly<{|
   setTouchTargeting: (val: boolean) => void,
   networking: boolean,
   setNetworking: (val: boolean) => void,
-  hierarchy?: ?Array<{|name: string|}>,
+  hierarchy?: ?ElementsHierarchy,
   selection?: ?number,
   setSelection: number => mixed,
-  inspected?: ?$ReadOnly<{|
-    style?: ?ViewStyleProp,
-    frame?: ?$ReadOnly<{|
-      top?: ?number,
-      left?: ?number,
-      width?: ?number,
-      height: ?number,
-    |}>,
-    source?: ?{|
-      fileName?: string,
-      lineNumber?: number,
-    |},
-  |}>,
-|}>;
+  inspected?: ?InspectedElement,
+}>;
 
 class InspectorPanel extends React.Component<Props> {
   renderWaiting(): React.Node {
@@ -70,8 +58,6 @@ class InspectorPanel extends React.Component<Props> {
           <ElementProperties
             style={this.props.inspected.style}
             frame={this.props.inspected.frame}
-            source={this.props.inspected.source}
-            // $FlowFixMe[incompatible-type] : Hierarchy should be non-nullable
             hierarchy={this.props.hierarchy}
             selection={this.props.selection}
             setSelection={this.props.setSelection}
@@ -94,16 +80,22 @@ class InspectorPanel extends React.Component<Props> {
             pressed={this.props.inspecting}
             onClick={this.props.setInspecting}
           />
-          <InspectorPanelButton
-            title={'Perf'}
-            pressed={this.props.perfing}
-            onClick={this.props.setPerfing}
-          />
-          <InspectorPanelButton
-            title={'Network'}
-            pressed={this.props.networking}
-            onClick={this.props.setNetworking}
-          />
+          {global.RN$Bridgeless === true ? null : (
+            // These Inspector Panel sub-features are removed under the New Arch.
+            // See https://github.com/react-native-community/discussions-and-proposals/pull/777
+            <>
+              <InspectorPanelButton
+                title={'Perf'}
+                pressed={this.props.perfing}
+                onClick={this.props.setPerfing}
+              />
+              <InspectorPanelButton
+                title={'Network'}
+                pressed={this.props.networking}
+                onClick={this.props.setNetworking}
+              />
+            </>
+          )}
           <InspectorPanelButton
             title={'Touchables'}
             pressed={this.props.touchTargeting}
@@ -115,11 +107,11 @@ class InspectorPanel extends React.Component<Props> {
   }
 }
 
-type InspectorPanelButtonProps = $ReadOnly<{|
+type InspectorPanelButtonProps = $ReadOnly<{
   onClick: (val: boolean) => void,
   pressed: boolean,
   title: string,
-|}>;
+}>;
 
 class InspectorPanelButton extends React.Component<InspectorPanelButtonProps> {
   render(): React.Node {

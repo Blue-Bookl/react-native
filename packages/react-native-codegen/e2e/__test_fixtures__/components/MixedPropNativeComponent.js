@@ -9,16 +9,17 @@
  */
 
 import type {ViewProps} from 'react-native/Libraries/Components/View/ViewPropTypes';
-import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 import type {HostComponent} from 'react-native/Libraries/Renderer/shims/ReactNativeTypes';
 import type {UnsafeMixed} from 'react-native/Libraries/Types/CodegenTypes';
 
-type NativeProps = $ReadOnly<{|
+import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
+
+type NativeProps = $ReadOnly<{
   ...ViewProps,
 
   // Props
   mixedProp?: UnsafeMixed,
-|}>;
+}>;
 
 export default (codegenNativeComponent<NativeProps>(
   'MixedPropNativeComponentView',

@@ -293,9 +293,6 @@ declare module '@babel/traverse' {
     dereference(): void;
   }
 
-  declare function getNodePathType(node: BabelNode): NodePath<>;
-  declare function getNodePathType(nodes: Array<BabelNode>): Array<NodePath<>>;
-
   declare type Opts = {...};
 
   declare export class NodePath<+TNode: BabelNode = BabelNode> {
@@ -733,7 +730,7 @@ declare module '@babel/traverse' {
     get<TKey: $Keys<TNode>>(
       key: TKey,
       context?: boolean | TraversalContext,
-    ): $Call<typeof getNodePathType, TNode[TKey]>;
+    ): TNode[TKey] extends BabelNode ? NodePath<> : Array<NodePath<>>;
 
     get(
       key: string,
@@ -903,7 +900,9 @@ declare module '@babel/traverse' {
     isImportAttribute(opts?: Opts): boolean;
     isImportDeclaration(opts?: Opts): boolean;
     isImportDefaultSpecifier(opts?: Opts): boolean;
+    isImportExpression(opts?: Opts): boolean;
     isImportNamespaceSpecifier(opts?: Opts): boolean;
+    isImportOrExportDeclaration(opts?: Opts): boolean;
     isImportSpecifier(opts?: Opts): boolean;
     isIndexedAccessType(opts?: Opts): boolean;
     isInferredPredicate(opts?: Opts): boolean;
@@ -1218,7 +1217,9 @@ declare module '@babel/traverse' {
     assertImportAttribute(opts?: Opts): void;
     assertImportDeclaration(opts?: Opts): void;
     assertImportDefaultSpecifier(opts?: Opts): void;
+    assertImportExpression(opts?: Opts): void;
     assertImportNamespaceSpecifier(opts?: Opts): void;
+    assertImportOrExportDeclaration(opts?: Opts): void;
     assertImportSpecifier(opts?: Opts): void;
     assertIndexedAccessType(opts?: Opts): void;
     assertInferredPredicate(opts?: Opts): void;
@@ -1574,8 +1575,13 @@ declare module '@babel/traverse' {
     ImportAttribute?: VisitNode<BabelNodeImportAttribute, TState>,
     ImportDeclaration?: VisitNode<BabelNodeImportDeclaration, TState>,
     ImportDefaultSpecifier?: VisitNode<BabelNodeImportDefaultSpecifier, TState>,
+    ImportExpression?: VisitNode<BabelNodeImportExpression, TState>,
     ImportNamespaceSpecifier?: VisitNode<
       BabelNodeImportNamespaceSpecifier,
+      TState,
+    >,
+    ImportOrExportDeclaration?: VisitNode<
+      BabelNodeImportOrExportDeclaration,
       TState,
     >,
     ImportSpecifier?: VisitNode<BabelNodeImportSpecifier, TState>,

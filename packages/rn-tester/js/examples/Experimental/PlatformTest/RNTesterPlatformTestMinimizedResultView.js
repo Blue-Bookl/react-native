@@ -11,11 +11,10 @@
 import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
 
 import RNTesterPlatformTestResultsText from './RNTesterPlatformTestResultsText';
-
 import * as React from 'react';
-import {View, Text, StyleSheet, TouchableHighlight} from 'react-native';
+import {StyleSheet, Text, TouchableHighlight, View} from 'react-native';
 
-type Props = $ReadOnly<{|
+type Props = $ReadOnly<{
   numFail: number,
   numError: number,
   numPass: number,
@@ -23,7 +22,7 @@ type Props = $ReadOnly<{|
   numSkipped: number,
   onPress?: () => void,
   style?: ?ViewStyleProp,
-|}>;
+}>;
 export default function RNTesterPlatformTestMinimizedResultView({
   numFail,
   numError,

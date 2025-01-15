@@ -9,8 +9,8 @@
  */
 
 import type {
-  RNTesterNavigationState,
   ComponentList,
+  RNTesterNavigationState,
 } from '../types/RNTesterTypes';
 
 export const RNTesterNavigationActionsType = {
@@ -18,7 +18,9 @@ export const RNTesterNavigationActionsType = {
   BACK_BUTTON_PRESS: 'BACK_BUTTON_PRESS',
   MODULE_CARD_PRESS: 'MODULE_CARD_PRESS',
   EXAMPLE_CARD_PRESS: 'EXAMPLE_CARD_PRESS',
-};
+  EXAMPLE_OPEN_URL_REQUEST: 'EXAMPLE_OPEN_URL_REQUEST',
+  NAVBAR_OPEN_MODULE_PRESS: 'NAVBAR_OPEN_MODULE_PRESS',
+} as const;
 
 const getUpdatedRecentlyUsed = ({
   exampleType,
@@ -56,7 +58,13 @@ export const RNTesterNavigationReducer = (
   action: {type: $Keys<typeof RNTesterNavigationActionsType>, data?: any},
 ): RNTesterNavigationState => {
   const {
-    data: {key = null, title = null, exampleType = null, screen = null} = {},
+    data: {
+      key = null,
+      title = null,
+      exampleKey = null,
+      exampleType = null,
+      screen = null,
+    } = {},
   } = action;
 
   switch (action.type) {
@@ -67,6 +75,17 @@ export const RNTesterNavigationReducer = (
         activeModuleTitle: null,
         activeModuleExampleKey: null,
         screen,
+        hadDeepLink: false,
+      };
+
+    case RNTesterNavigationActionsType.NAVBAR_OPEN_MODULE_PRESS:
+      return {
+        ...state,
+        activeModuleKey: key,
+        activeModuleTitle: title,
+        activeModuleExampleKey: null,
+        screen,
+        hadDeepLink: true,
       };
 
     case RNTesterNavigationActionsType.MODULE_CARD_PRESS:
@@ -90,14 +109,31 @@ export const RNTesterNavigationReducer = (
       };
 
     case RNTesterNavigationActionsType.BACK_BUTTON_PRESS:
-      // Go back to module or list
+      // Go back to module or list.
       return {
         ...state,
         activeModuleExampleKey: null,
         activeModuleKey:
-          state.activeModuleExampleKey != null ? state.activeModuleKey : null,
+          !state.hadDeepLink && state.activeModuleExampleKey != null
+            ? state.activeModuleKey
+            : null,
         activeModuleTitle:
-          state.activeModuleExampleKey != null ? state.activeModuleTitle : null,
+          !state.hadDeepLink && state.activeModuleExampleKey != null
+            ? state.activeModuleTitle
+            : null,
+        hadDeepLink: false,
+        // If there was a deeplink navigation, pressing Back should bring us back to the root.
+        screen: state.hadDeepLink ? 'components' : state.screen,
+      };
+
+    case RNTesterNavigationActionsType.EXAMPLE_OPEN_URL_REQUEST:
+      return {
+        ...state,
+        activeModuleKey: key,
+        activeModuleTitle: title,
+        activeModuleExampleKey: exampleKey,
+        hadDeepLink: true,
+        screen: 'components',
       };
 
     default:

@@ -8,17 +8,18 @@
  * @flow strict-local
  */
 
-import type {ImageSource} from 'react-native/Libraries/Image/ImageSource';
 import type {ViewProps} from 'react-native/Libraries/Components/View/ViewPropTypes';
-import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
+import type {ImageSource} from 'react-native/Libraries/Image/ImageSource';
 import type {HostComponent} from 'react-native/Libraries/Renderer/shims/ReactNativeTypes';
 
-type NativeProps = $ReadOnly<{|
+import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
+
+type NativeProps = $ReadOnly<{
   ...ViewProps,
 
   // Props
   thumbImage?: ImageSource,
-|}>;
+}>;
 
 export default (codegenNativeComponent<NativeProps>(
   'ImagePropNativeComponentView',

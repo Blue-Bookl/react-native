@@ -16,48 +16,6 @@ import {LayoutChangeEvent, PointerEvents} from '../../Types/CoreEventTypes';
 import {Touchable} from '../Touchable/Touchable';
 import {AccessibilityProps} from './ViewAccessibility';
 
-export type TVParallaxProperties = {
-  /**
-   * If true, parallax effects are enabled.  Defaults to true.
-   */
-  enabled?: boolean | undefined;
-
-  /**
-   * Defaults to 2.0.
-   */
-  shiftDistanceX?: number | undefined;
-
-  /**
-   * Defaults to 2.0.
-   */
-  shiftDistanceY?: number | undefined;
-
-  /**
-   * Defaults to 0.05.
-   */
-  tiltAngle?: number | undefined;
-
-  /**
-   * Defaults to 1.0
-   */
-  magnification?: number | undefined;
-
-  /**
-   * Defaults to 1.0
-   */
-  pressMagnification?: number | undefined;
-
-  /**
-   * Defaults to 0.3
-   */
-  pressDuration?: number | undefined;
-
-  /**
-   * Defaults to 0.3
-   */
-  pressDelay?: number | undefined;
-};
-
 export interface TVViewPropsIOS {
   /**
    * *(Apple TV only)* When set to true, this view will be focusable
@@ -73,13 +31,6 @@ export interface TVViewPropsIOS {
    * @platform ios
    */
   hasTVPreferredFocus?: boolean | undefined;
-
-  /**
-   * *(Apple TV only)* Object with properties to control Apple TV parallax effects.
-   *
-   * @platform ios
-   */
-  tvParallaxProperties?: TVParallaxProperties | undefined;
 
   /**
    * *(Apple TV only)* May be used to change the appearance of the Apple TV parallax effect when this view goes in or out of focus.  Defaults to 2.0.
@@ -133,6 +84,13 @@ export interface ViewPropsAndroid {
   collapsable?: boolean | undefined;
 
   /**
+   * Setting to false prevents direct children of the view from being removed
+   * from the native view hierarchy, similar to the effect of setting
+   * `collapsable={false}` on each child.
+   */
+  collapsableChildren?: boolean | undefined;
+
+  /**
    * Whether this view should render itself (and all of its children) into a single hardware texture on the GPU.
    *
    * On Android, this is useful for animations and interactions that only modify opacity, rotation, translation, and/or scale:
@@ -145,6 +103,17 @@ export interface ViewPropsAndroid {
    * Whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
    */
   focusable?: boolean | undefined;
+
+  /**
+   * Indicates whether this `View` should be focusable with a non-touch input device, eg. receive focus with a hardware keyboard.
+   * See https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/tabindex
+   * for more details.
+   *
+   * Supports the following values:
+   * -  0 (View is focusable)
+   * - -1 (View is not focusable)
+   */
+  tabIndex?: 0 | -1 | undefined;
 }
 
 /**

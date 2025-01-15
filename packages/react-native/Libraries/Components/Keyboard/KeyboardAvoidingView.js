@@ -9,6 +9,7 @@
  */
 
 import type {ViewStyleProp} from '../../StyleSheet/StyleSheet';
+import type {DimensionsPayload} from '../../Utilities/NativeDeviceInfo';
 import type {
   ViewLayout,
   ViewLayoutEvent,
@@ -18,6 +19,7 @@ import type {KeyboardEvent, KeyboardMetrics} from './Keyboard';
 
 import LayoutAnimation from '../../LayoutAnimation/LayoutAnimation';
 import StyleSheet from '../../StyleSheet/StyleSheet';
+import Dimensions from '../../Utilities/Dimensions';
 import Platform from '../../Utilities/Platform';
 import {type EventSubscription} from '../../vendor/emitter/EventEmitter';
 import AccessibilityInfo from '../AccessibilityInfo/AccessibilityInfo';
@@ -25,7 +27,7 @@ import View from '../View/View';
 import Keyboard from './Keyboard';
 import * as React from 'react';
 
-type Props = $ReadOnly<{|
+type Props = $ReadOnly<{
   ...ViewProps,
 
   /**
@@ -49,11 +51,11 @@ type Props = $ReadOnly<{|
    * may be non-zero in some cases. Defaults to 0.
    */
   keyboardVerticalOffset?: number,
-|}>;
+}>;
 
-type State = {|
+type State = {
   bottom: number,
-|};
+};
 
 /**
  * View that moves out of the way when the keyboard appears by automatically
@@ -66,6 +68,7 @@ class KeyboardAvoidingView extends React.Component<Props, State> {
   viewRef: {current: React.ElementRef<typeof View> | null, ...};
   _initialFrameHeight: number = 0;
   _bottom: number = 0;
+  _windowWidth: number = Dimensions.get('window').width;
 
   constructor(props: Props) {
     super(props);
@@ -113,6 +116,8 @@ class KeyboardAvoidingView extends React.Component<Props, State> {
   };
 
   _onLayout = async (event: ViewLayoutEvent) => {
+    event.persist();
+
     const oldFrame = this._frame;
     this._frame = event.nativeEvent.layout;
     if (!this._initialFrameHeight) {
@@ -130,6 +135,10 @@ class KeyboardAvoidingView extends React.Component<Props, State> {
     }
   };
 
+  _onDimensionsChange = ({window}: DimensionsPayload) => {
+    this._windowWidth = window?.width ?? 0;
+  };
+
   // Avoid unnecessary renders if the KeyboardAvoidingView is disabled.
   _setBottom = (value: number) => {
     const enabled = this.props.enabled ?? true;
@@ -141,6 +150,15 @@ class KeyboardAvoidingView extends React.Component<Props, State> {
 
   _updateBottomIfNecessary = async () => {
     if (this._keyboardEvent == null) {
+      this._setBottom(0);
+      return;
+    }
+
+    if (
+      Platform.OS === 'ios' &&
+      this._windowWidth !== this._keyboardEvent.endCoordinates.width
+    ) {
+      // The keyboard is not the standard bottom-of-the-screen keyboard. For example, floating keyboard on iPadOS.
       this._setBottom(0);
       return;
     }
@@ -175,9 +193,15 @@ class KeyboardAvoidingView extends React.Component<Props, State> {
   }
 
   componentDidMount(): void {
+    if (!Keyboard.isVisible()) {
+      this._keyboardEvent = null;
+      this._setBottom(0);
+    }
+
     if (Platform.OS === 'ios') {
       this._subscriptions = [
         Keyboard.addListener('keyboardWillChangeFrame', this._onKeyboardChange),
+        Dimensions.addEventListener('change', this._onDimensionsChange),
       ];
     } else {
       this._subscriptions = [

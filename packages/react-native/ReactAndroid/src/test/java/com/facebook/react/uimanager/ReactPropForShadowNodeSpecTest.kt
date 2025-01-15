@@ -10,25 +10,58 @@ package com.facebook.react.uimanager
 import android.view.View
 import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.uimanager.annotations.ReactPropGroup
-import org.junit.Ignore
+import com.facebook.testutils.shadows.ShadowSoLoader
+import com.facebook.yoga.YogaConfig
+import com.facebook.yoga.YogaConfigFactory
+import com.facebook.yoga.YogaNode
+import com.facebook.yoga.YogaNodeFactory
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.MockedStatic
+import org.mockito.Mockito.any
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.mockStatic
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
 /**
  * Test that verifies that spec of methods annotated with @ReactProp in {@link ReactShadowNode} is
  * correct
  */
 @RunWith(RobolectricTestRunner::class)
-@Ignore
+@Config(shadows = [ShadowSoLoader::class])
 class ReactPropForShadowNodeSpecTest {
+
+  private lateinit var yogaNodeFactory: MockedStatic<YogaNodeFactory>
+  private lateinit var yogaConfigFactory: MockedStatic<YogaConfigFactory>
+
+  @Before
+  fun setup() {
+    yogaNodeFactory = mockStatic(YogaNodeFactory::class.java)
+    yogaNodeFactory
+        .`when`<YogaNode> { YogaNodeFactory.create(any()) }
+        .thenReturn(mock(YogaNode::class.java))
+    yogaConfigFactory = mockStatic(YogaConfigFactory::class.java)
+    yogaConfigFactory
+        .`when`<YogaConfig> { YogaConfigFactory.create() }
+        .thenReturn(mock(YogaConfig::class.java))
+  }
+
+  @After()
+  fun tearDown() {
+    yogaNodeFactory.close()
+    yogaConfigFactory.close()
+  }
+
   @Test(expected = RuntimeException::class)
   fun testMethodWithWrongNumberOfParams() {
     BaseViewManager(
             object : ReactShadowNodeImpl() {
                   @Suppress("UNUSED_PARAMETER")
                   @ReactProp(name = "prop")
-                  fun setterWithIncorrectNumberOfArgs(value: Boolean, anotherValue: Int) {}
+                  fun setterWithIncorrectNumberOfArgs(value: Boolean, anotherValue: Int) = Unit
                 }
                 .javaClass)
         .nativeProps
@@ -38,7 +71,7 @@ class ReactPropForShadowNodeSpecTest {
   fun testMethodWithTooFewParams() {
     BaseViewManager(
             object : ReactShadowNodeImpl() {
-                  @ReactProp(name = "prop") fun setterWithNoArgs() {}
+                  @ReactProp(name = "prop") fun setterWithNoArgs() = Unit
                 }
                 .javaClass)
         .nativeProps
@@ -50,7 +83,7 @@ class ReactPropForShadowNodeSpecTest {
             object : ReactShadowNodeImpl() {
                   @Suppress("UNUSED_PARAMETER")
                   @ReactProp(name = "prop")
-                  fun setterWithMap(value: Map<*, *>) {}
+                  fun setterWithMap(value: Map<*, *>) = Unit
                 }
                 .javaClass)
         .nativeProps
@@ -62,7 +95,7 @@ class ReactPropForShadowNodeSpecTest {
             object : ReactShadowNodeImpl() {
                   @Suppress("UNUSED_PARAMETER")
                   @ReactPropGroup(names = ["prop1", "prop2"])
-                  fun setterWithTooManyParams(index: Int, value: Float, boolean: Boolean) {}
+                  fun setterWithTooManyParams(index: Int, value: Float, boolean: Boolean) = Unit
                 }
                 .javaClass)
         .nativeProps
@@ -74,7 +107,7 @@ class ReactPropForShadowNodeSpecTest {
             object : ReactShadowNodeImpl() {
                   @Suppress("UNUSED_PARAMETER")
                   @ReactPropGroup(names = ["props1", "prop2"])
-                  fun setterWithTooFewParams(index: Int) {}
+                  fun setterWithTooFewParams(index: Int) = Unit
                 }
                 .javaClass)
         .nativeProps
@@ -86,7 +119,7 @@ class ReactPropForShadowNodeSpecTest {
             object : ReactShadowNodeImpl() {
                   @Suppress("UNUSED_PARAMETER")
                   @ReactPropGroup(names = ["prop1", "prop2"])
-                  fun setterWithNoIndexParam(value: Float, boolean: Boolean) {}
+                  fun setterWithNoIndexParam(value: Float, boolean: Boolean) = Unit
                 }
                 .javaClass)
         .nativeProps
@@ -105,7 +138,9 @@ class ReactPropForShadowNodeSpecTest {
 
       override fun createViewInstance(reactContext: ThemedReactContext): View = View(null)
 
-      override fun updateExtraData(root: View, extraData: Any?) {}
+      override fun prepareToRecycleView(reactContext: ThemedReactContext, view: View): View? = null
+
+      override fun updateExtraData(root: View, extraData: Any?) = Unit
     }
   }
 }

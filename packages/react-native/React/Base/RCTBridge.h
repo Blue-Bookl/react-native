@@ -53,13 +53,16 @@ void RCTEnableTurboModuleInterop(BOOL enabled);
 BOOL RCTTurboModuleInteropBridgeProxyEnabled(void);
 void RCTEnableTurboModuleInteropBridgeProxy(BOOL enabled);
 
+// Turn on the fabric interop layer
+BOOL RCTFabricInteropLayerEnabled(void);
+void RCTEnableFabricInteropLayer(BOOL enabled);
+
 // Turn on TurboModule sync execution of void methods
 BOOL RCTTurboModuleSyncVoidMethodsEnabled(void);
 void RCTEnableTurboModuleSyncVoidMethods(BOOL enabled);
 
-// Use a shared queue for executing module methods
-BOOL RCTTurboModuleSharedQueueEnabled(void);
-void RCTEnableTurboModuleSharedQueue(BOOL enabled);
+BOOL RCTUIManagerDispatchAccessibilityManagerInitOntoMain(void);
+void RCTUIManagerSetDispatchAccessibilityManagerInitOntoMain(BOOL enabled);
 
 typedef enum {
   kRCTBridgeProxyLoggingLevelNone,
@@ -73,6 +76,9 @@ void RCTSetTurboModuleInteropBridgeProxyLogLevel(RCTBridgeProxyLoggingLevel logL
 // Route all TurboModules through TurboModule interop
 BOOL RCTTurboModuleInteropForAllTurboModulesEnabled(void);
 void RCTEnableTurboModuleInteropForAllTurboModules(BOOL enabled);
+
+BOOL RCTBridgeModuleBatchDidCompleteDisabled(void);
+void RCTDisableBridgeModuleBatchDidComplete(BOOL disabled);
 
 typedef enum {
   kRCTGlobalScope,

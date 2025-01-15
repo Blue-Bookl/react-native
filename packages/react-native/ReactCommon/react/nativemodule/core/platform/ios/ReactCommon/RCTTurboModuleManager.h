@@ -10,12 +10,15 @@
 #import <memory>
 
 #import <React/RCTBridgeModuleDecorator.h>
-#import <React/RCTBridgeProxy.h>
 #import <React/RCTDefines.h>
 #import <React/RCTTurboModuleRegistry.h>
 #import <ReactCommon/RuntimeExecutor.h>
 #import <ReactCommon/TurboModuleBinding.h>
+
 #import "RCTTurboModule.h"
+
+@class RCTBridgeProxy;
+@class RCTTurboModuleManager;
 
 @protocol RCTTurboModuleManagerDelegate <NSObject>
 

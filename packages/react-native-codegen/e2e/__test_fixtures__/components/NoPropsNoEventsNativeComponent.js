@@ -9,14 +9,15 @@
  */
 
 import type {ViewProps} from 'react-native/Libraries/Components/View/ViewPropTypes';
-import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 import type {HostComponent} from 'react-native/Libraries/Renderer/shims/ReactNativeTypes';
 
-type NativeProps = $ReadOnly<{|
+import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
+
+type NativeProps = $ReadOnly<{
   ...ViewProps,
 
   // No Props or events
-|}>;
+}>;
 
 export default (codegenNativeComponent<NativeProps>(
   'NoPropsNoEventsNativeComponentView',

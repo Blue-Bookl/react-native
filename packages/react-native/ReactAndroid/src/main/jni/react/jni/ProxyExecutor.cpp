@@ -9,12 +9,8 @@
 
 #include <cxxreact/JSBigString.h>
 #include <cxxreact/ModuleRegistry.h>
-#include <cxxreact/SystraceSection.h>
-#include <fb/assert.h>
-// #include <fb/Environment.h>
+#include <cxxreact/TraceSection.h>
 #include <folly/json.h>
-// #include <jni/LocalReference.h>
-// #include <jni/LocalString.h>
 
 #include <memory>
 
@@ -56,7 +52,7 @@ void ProxyExecutor::initializeRuntime() {
   folly::dynamic nativeModuleConfig = folly::dynamic::array;
 
   {
-    SystraceSection s("collectNativeModuleDescriptions");
+    TraceSection s("collectNativeModuleDescriptions");
     auto moduleRegistry = m_delegate->getModuleRegistry();
     for (const auto& name : moduleRegistry->moduleNames()) {
       auto config = moduleRegistry->getConfig(name);
@@ -68,7 +64,7 @@ void ProxyExecutor::initializeRuntime() {
       "remoteModuleConfig", std::move(nativeModuleConfig));
 
   {
-    SystraceSection t("setGlobalVariable");
+    TraceSection t("setGlobalVariable");
     setGlobalVariable(
         "__fbBatchedBridgeConfig",
         std::make_unique<JSBigStdString>(folly::toJson(config)));

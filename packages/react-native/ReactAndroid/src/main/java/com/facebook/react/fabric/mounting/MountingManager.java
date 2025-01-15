@@ -24,6 +24,7 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.RetryableMountingLayerException;
 import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.common.annotations.UnstableReactNativeAPI;
 import com.facebook.react.common.mapbuffer.MapBuffer;
 import com.facebook.react.fabric.FabricUIManager;
 import com.facebook.react.fabric.events.EventEmitterWrapper;
@@ -143,8 +144,11 @@ public class MountingManager {
 
       surfaceMountingManager.stopSurface();
 
-      if (surfaceMountingManager == mMostRecentSurfaceMountingManager) {
+      if (mMostRecentSurfaceMountingManager == surfaceMountingManager) {
         mMostRecentSurfaceMountingManager = null;
+      }
+      if (mLastQueriedSurfaceMountingManager == surfaceMountingManager) {
+        mLastQueriedSurfaceMountingManager = null;
       }
     } else {
       ReactSoftExceptionLogger.logSoftException(
@@ -422,6 +426,29 @@ public class MountingManager {
             height,
             heightMode,
             attachmentsPositions);
+  }
+
+  /**
+   * THIS PREFETCH METHOD IS EXPERIMENTAL, DO NOT USE IT FOR PRODUCTION CODE. IT WILL MOST LIKELY
+   * CHANGE OR BE REMOVED IN THE FUTURE.
+   *
+   * @param reactContext
+   * @param componentName
+   * @param surfaceId {@link int} surface ID
+   * @param reactTag reactTag that should be set as ID of the view instance
+   * @param params {@link MapBuffer} prefetch request params defined in C++
+   */
+  @AnyThread
+  @UnstableReactNativeAPI
+  public void experimental_prefetchResource(
+      ReactContext reactContext,
+      String componentName,
+      int surfaceId,
+      int reactTag,
+      MapBuffer params) {
+    mViewManagerRegistry
+        .get(componentName)
+        .experimental_prefetchResource(reactContext, surfaceId, reactTag, params);
   }
 
   public void enqueuePendingEvent(

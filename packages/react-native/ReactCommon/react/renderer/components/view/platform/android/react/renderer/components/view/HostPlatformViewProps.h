@@ -26,16 +26,15 @@ class HostPlatformViewProps : public BaseViewProps {
   HostPlatformViewProps(
       const PropsParserContext& context,
       const HostPlatformViewProps& sourceProps,
-      const RawProps& rawProps);
+      const RawProps& rawProps,
+      const std::function<bool(const std::string&)>& filterObjectKeys =
+          nullptr);
 
   void setProp(
       const PropsParserContext& context,
       RawPropsPropNameHash hash,
       const char* propName,
       const RawValue& value);
-
-  void propsDiffMapBuffer(const Props* oldProps, MapBufferBuilder& builder)
-      const override;
 
 #pragma mark - Props
 

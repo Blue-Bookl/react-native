@@ -29,11 +29,6 @@ class AccessibilityProps {
       const char* propName,
       const RawValue& value);
 
-#ifdef ANDROID
-  void propsDiffMapBuffer(const Props* oldProps, MapBufferBuilder& builder)
-      const;
-#endif
-
 #pragma mark - Props
 
   bool accessible{false};
@@ -46,8 +41,10 @@ class AccessibilityProps {
   std::string accessibilityRole{""};
   std::string accessibilityHint{""};
   std::string accessibilityLanguage{""};
+  std::string accessibilityLargeContentTitle{""};
   AccessibilityValue accessibilityValue;
   std::vector<AccessibilityAction> accessibilityActions{};
+  bool accessibilityShowsLargeContentViewer{false};
   bool accessibilityViewIsModal{false};
   bool accessibilityElementsHidden{false};
   bool accessibilityIgnoresInvertColors{false};

@@ -10,9 +10,9 @@
 
 'use strict';
 
-const React = require('react');
-
-const {StyleSheet, Text, ToastAndroid, Pressable} = require('react-native');
+import RNTesterText from '../../components/RNTesterText';
+import React from 'react';
+import {Pressable, StyleSheet, ToastAndroid} from 'react-native';
 
 const ToastWithShortDuration = () => {
   return (
@@ -20,7 +20,7 @@ const ToastWithShortDuration = () => {
       onPress={() =>
         ToastAndroid.show('Copied to clipboard!', ToastAndroid.SHORT)
       }>
-      <Text style={styles.text}>Tap to view toast</Text>
+      <RNTesterText style={styles.text}>Tap to view toast</RNTesterText>
     </Pressable>
   );
 };
@@ -29,7 +29,7 @@ const ToastWithLongDuration = () => {
   return (
     <Pressable
       onPress={() => ToastAndroid.show('Sending message..', ToastAndroid.LONG)}>
-      <Text style={styles.text}>Tap to view toast</Text>
+      <RNTesterText style={styles.text}>Tap to view toast</RNTesterText>
     </Pressable>
   );
 };
@@ -44,7 +44,7 @@ const ToastWithTopGravity = () => {
           ToastAndroid.TOP,
         )
       }>
-      <Text style={styles.text}>Tap to view toast</Text>
+      <RNTesterText style={styles.text}>Tap to view toast</RNTesterText>
     </Pressable>
   );
 };
@@ -59,7 +59,7 @@ const ToastWithCenterGravity = () => {
           ToastAndroid.CENTER,
         )
       }>
-      <Text style={styles.text}>Tap to view toast</Text>
+      <RNTesterText style={styles.text}>Tap to view toast</RNTesterText>
     </Pressable>
   );
 };
@@ -74,7 +74,7 @@ const ToastWithBottomGravity = () => {
           ToastAndroid.BOTTOM,
         )
       }>
-      <Text style={styles.text}>Tap to view toast</Text>
+      <RNTesterText style={styles.text}>Tap to view toast</RNTesterText>
     </Pressable>
   );
 };
@@ -91,7 +91,7 @@ const ToastWithXOffset = () => {
           0,
         )
       }>
-      <Text style={styles.text}>Tap to view toast</Text>
+      <RNTesterText style={styles.text}>Tap to view toast</RNTesterText>
     </Pressable>
   );
 };
@@ -108,14 +108,14 @@ const ToastWithYOffset = () => {
           100,
         )
       }>
-      <Text style={styles.text}>Tap to view toast</Text>
+      <RNTesterText style={styles.text}>Tap to view toast</RNTesterText>
     </Pressable>
   );
 };
 
 const styles = StyleSheet.create({
   text: {
-    color: 'black',
+    color: 'blue',
   },
 });
 

@@ -8,8 +8,9 @@
 #import <UIKit/UIKit.h>
 
 #import <React/RCTDefines.h>
-#import <react/renderer/mapbuffer/MapBuffer.h>
-#import <react/runtime/JSEngineInstance.h>
+#import <React/RCTJavaScriptLoader.h>
+#import <jsinspector-modern/ReactCdp.h>
+#import <react/runtime/JSRuntimeFactory.h>
 #import <react/runtime/ReactInstance.h>
 
 #import "RCTContextContainerHandling.h"
@@ -36,29 +37,24 @@ RCT_EXTERN void RCTInstanceSetRuntimeDiagnosticFlags(NSString *_Nullable flags);
 
 @protocol RCTInstanceDelegate <RCTContextContainerHandling>
 
-- (void)instance:(RCTInstance *)instance
-    didReceiveJSErrorStack:(NSArray<NSDictionary<NSString *, id> *> *)stack
-                   message:(NSString *)message
-               exceptionId:(NSUInteger)exceptionId
-                   isFatal:(BOOL)isFatal;
-
 - (void)instance:(RCTInstance *)instance didInitializeRuntime:(facebook::jsi::Runtime &)runtime;
 
+- (void)loadBundleAtURL:(NSURL *)sourceURL
+             onProgress:(RCTSourceLoadProgressBlock)onProgress
+             onComplete:(RCTSourceLoadBlock)loadCallback;
+
+// TODO(T205780509): Remove this api in react native v0.78
+// The bridgeless js error handling api will just call into exceptionsmanager directly
+- (BOOL)instance:(RCTInstance *)instance
+    didReceiveJSErrorStack:(NSArray<NSDictionary<NSString *, id> *> *)stack
+                   message:(NSString *)message
+           originalMessage:(NSString *_Nullable)originalMessage
+                      name:(NSString *_Nullable)name
+            componentStack:(NSString *_Nullable)componentStack
+               exceptionId:(NSUInteger)exceptionId
+                   isFatal:(BOOL)isFatal
+                 extraData:(NSDictionary<NSString *, id> *)extraData __attribute__((deprecated));
 @end
-
-/**
- * This is a private protocol used to configure internal behavior of the runtime.
- * DO NOT USE THIS OUTSIDE OF THE REACT NATIVE CODEBASE.
- */
-@protocol RCTInstanceDelegateInternal <NSObject>
-
-// TODO(T166383606): Remove this method when we remove the legacy runtime scheduler or we have access to
-// ReactNativeConfig before we initialize it.
-- (BOOL)useModernRuntimeScheduler:(RCTInstance *)instance;
-
-@end
-
-typedef void (^_Null_unspecified RCTInstanceInitialBundleLoadCompletionBlock)();
 
 /**
  * RCTInstance owns and manages most of the pieces of infrastructure required to display a screen powered by React
@@ -68,13 +64,15 @@ typedef void (^_Null_unspecified RCTInstanceInitialBundleLoadCompletionBlock)();
 @interface RCTInstance : NSObject
 
 - (instancetype)initWithDelegate:(id<RCTInstanceDelegate>)delegate
-                jsEngineInstance:(std::shared_ptr<facebook::react::JSEngineInstance>)jsEngineInstance
+                jsRuntimeFactory:(std::shared_ptr<facebook::react::JSRuntimeFactory>)jsRuntimeFactory
                    bundleManager:(RCTBundleManager *)bundleManager
       turboModuleManagerDelegate:(id<RCTTurboModuleManagerDelegate>)turboModuleManagerDelegate
-             onInitialBundleLoad:(RCTInstanceInitialBundleLoadCompletionBlock)onInitialBundleLoad
-                  moduleRegistry:(RCTModuleRegistry *)moduleRegistry;
+                  moduleRegistry:(RCTModuleRegistry *)moduleRegistry
+           parentInspectorTarget:(facebook::react::jsinspector_modern::HostTarget *)parentInspectorTarget
+                   launchOptions:(nullable NSDictionary *)launchOptions;
 
 - (void)callFunctionOnJSModule:(NSString *)moduleName method:(NSString *)method args:(NSArray *)args;
+- (void)callFunctionOnBufferedRuntimeExecutor:(std::function<void(facebook::jsi::Runtime &runtime)> &&)executor;
 
 - (void)registerSegmentWithId:(NSNumber *)segmentId path:(NSString *)path;
 

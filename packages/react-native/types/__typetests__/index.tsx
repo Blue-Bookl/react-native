@@ -20,7 +20,6 @@ The content of index.io.js could be something like
 For a list of complete Typescript examples: check https://github.com/bgrieder/RNTSExplorer
 */
 
-import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import {
   AccessibilityInfo,
@@ -106,6 +105,7 @@ import {
   TextStyle,
   TouchableNativeFeedback,
   TouchableOpacity,
+  TouchableHighlight,
   TouchableWithoutFeedback,
   UIManager,
   View,
@@ -120,6 +120,7 @@ import {
   ToastAndroid,
   Touchable,
   LayoutAnimation,
+  experimental_LayoutConformance as LayoutConformance,
 } from 'react-native';
 
 declare module 'react-native' {
@@ -411,7 +412,9 @@ class CustomView extends React.Component {
   }
 }
 
-class Welcome extends React.Component<ElementProps<View> & {color: string}> {
+class Welcome extends React.Component<
+  ElementProps<View> & {color: string; bgColor?: null | undefined | string}
+> {
   rootViewRef = React.useRef<View>(null);
   customViewRef = React.useRef<CustomView>(null);
 
@@ -436,12 +439,18 @@ class Welcome extends React.Component<ElementProps<View> & {color: string}> {
   }
 
   render() {
-    const {color, ...props} = this.props;
+    const {color, bgColor, ...props} = this.props;
     return (
       <View
         {...props}
         ref={this.rootViewRef}
-        style={[[styles.container], undefined, null, false]}>
+        style={[
+          [styles.container],
+          undefined,
+          null,
+          false,
+          bgColor && {backgroundColor: bgColor},
+        ]}>
         <Text style={styles.welcome}>Welcome to React Native</Text>
         <Text style={styles.instructions}>
           To get started, edit index.ios.js
@@ -476,6 +485,74 @@ function TouchableTest() {
   }
 }
 
+export class TouchableHighlightTest extends React.Component {
+  buttonRef = React.createRef<React.ElementRef<typeof TouchableHighlight>>();
+
+  render() {
+    return (
+      <>
+        <TouchableHighlight ref={this.buttonRef} />
+        <TouchableHighlight
+          ref={ref => {
+            ref?.focus();
+            ref?.blur();
+            ref?.measure(
+              (x, y, width, height, pageX, pageY): number =>
+                x + y + width + height + pageX + pageY,
+            );
+            ref?.measureInWindow(
+              (x, y, width, height): number => x + y + width + height,
+            );
+            ref?.setNativeProps({focusable: false});
+          }}
+        />
+      </>
+    );
+  }
+}
+
+export class TouchableOpacityTest extends React.Component {
+  buttonRef = React.createRef<React.ElementRef<typeof TouchableOpacity>>();
+
+  render() {
+    return (
+      <>
+        <TouchableOpacity ref={this.buttonRef} />
+        <TouchableOpacity
+          ref={ref => {
+            ref?.focus();
+            ref?.blur();
+            ref?.measure(
+              (x, y, width, height, pageX, pageY): number =>
+                x + y + width + height + pageX + pageY,
+            );
+            ref?.measureInWindow(
+              (x, y, width, height): number => x + y + width + height,
+            );
+            ref?.setNativeProps({focusable: false});
+          }}
+        />
+        <TouchableOpacity focusable={false} />
+        <TouchableOpacity rejectResponderTermination={true} />
+        <TouchableOpacity
+          role="button"
+          accessibilityRole="button"
+          accessibilityLabelledBy="my-label-text"
+          aria-labelledby="my-label-text"
+        />
+        <TouchableOpacity
+          // @ts-expect-error - expected boolean value
+          focusable={1}
+        />
+        <TouchableOpacity
+          // @ts-expect-error - expected boolean value
+          rejectResponderTermination={'not-bool'}
+        />
+      </>
+    );
+  }
+}
+
 // TouchableNativeFeedbackTest
 export class TouchableNativeFeedbackTest extends React.Component {
   onPressButton = (e: GestureResponderEvent) => {
@@ -492,6 +569,16 @@ export class TouchableNativeFeedbackTest extends React.Component {
             <Text style={{margin: 30}}>Button</Text>
           </View>
         </TouchableNativeFeedback>
+        <TouchableWithoutFeedback focusable={false}>
+          <View style={{width: 150, height: 100, backgroundColor: 'red'}}>
+            <Text style={{margin: 30}}>Button</Text>
+          </View>
+        </TouchableWithoutFeedback>
+        <TouchableWithoutFeedback rejectResponderTermination={true}>
+          <View style={{width: 150, height: 100, backgroundColor: 'red'}}>
+            <Text style={{margin: 30}}>Button</Text>
+          </View>
+        </TouchableWithoutFeedback>
         <TouchableNativeFeedback
           background={TouchableNativeFeedback.Ripple('red', true)}>
           <View style={{width: 150, height: 100, backgroundColor: 'red'}}>
@@ -537,7 +624,7 @@ export class TouchableNativeFeedbackTest extends React.Component {
 
 // PressableTest
 export class PressableTest extends React.Component<{}> {
-  private readonly myRef: React.RefObject<View> = React.createRef();
+  private readonly myRef: React.RefObject<View | null> = React.createRef();
 
   onPressButton = (e: GestureResponderEvent) => {
     e.persist();
@@ -718,7 +805,9 @@ export class FlatListTest extends React.Component<FlatListProps<number>, {}> {
   render() {
     return (
       <FlatList
-        ref={list => (this.list = list)}
+        ref={list => {
+          this.list = list;
+        }}
         data={[1, 2, 3, 4, 5]}
         renderItem={this._renderItem}
         ItemSeparatorComponent={this._renderSeparator}
@@ -758,7 +847,7 @@ export class SectionListTest extends React.Component<
   SectionListProps<string>,
   {}
 > {
-  myList: React.RefObject<SectionList<string>>;
+  myList: React.RefObject<SectionList<string> | null>;
 
   constructor(props: SectionListProps<string>) {
     super(props);
@@ -832,7 +921,7 @@ export class SectionListTypedSectionTest extends React.Component<
   SectionListProps<string, SectionT>,
   {}
 > {
-  myList: React.RefObject<SectionList<string, SectionT>>;
+  myList: React.RefObject<SectionList<string, SectionT> | null>;
 
   constructor(props: SectionListProps<string, SectionT>) {
     super(props);
@@ -1160,7 +1249,9 @@ class TextInputTest extends React.Component<{}, {username: string}> {
         </Text>
 
         <TextInput
-          ref={input => (this.username = input)}
+          ref={input => {
+            this.username = input;
+          }}
           textContentType="username"
           autoComplete="username"
           value={this.state.username}
@@ -1267,11 +1358,17 @@ export class ImageTest extends React.Component {
         }
       });
 
+    const promise1: Promise<any> = Image.getSize(uri).then(({width, height}) =>
+      console.log(width, height),
+    );
     Image.getSize(uri, (width, height) => console.log(width, height));
     Image.getSize(
       uri,
       (width, height) => console.log(width, height),
       error => console.error(error),
+    );
+    const promise2: Promise<any> = Image.getSizeWithHeaders(uri, headers).then(
+      ({width, height}) => console.log(width, height),
     );
     Image.getSizeWithHeaders(uri, headers, (width, height) =>
       console.log(width, height),
@@ -1441,10 +1538,6 @@ const NativeBridgedComponent = requireNativeComponent<{nativeProp: string}>(
 );
 
 class BridgedComponentTest extends React.Component {
-  static propTypes = {
-    jsProp: PropTypes.string.isRequired,
-  };
-
   nativeComponentRef: React.ElementRef<typeof NativeBridgedComponent> | null;
 
   callNativeMethod = () => {
@@ -1469,7 +1562,9 @@ class BridgedComponentTest extends React.Component {
       <NativeBridgedComponent
         {...this.props}
         nativeProp="test"
-        ref={ref => (this.nativeComponentRef = ref)}
+        ref={ref => {
+          this.nativeComponentRef = ref;
+        }}
       />
     );
   }
@@ -2119,3 +2214,7 @@ const ActionSheetIOSTest = () => {
   // test dismissActionSheet method
   ActionSheetIOS.dismissActionSheet();
 };
+
+<LayoutConformance mode="strict">
+  <View />
+</LayoutConformance>;

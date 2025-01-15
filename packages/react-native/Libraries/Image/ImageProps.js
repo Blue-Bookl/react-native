@@ -19,20 +19,21 @@ import type {
 } from '../StyleSheet/StyleSheet';
 import type {LayoutEvent, SyntheticEvent} from '../Types/CoreEventTypes';
 import typeof Image from './Image';
+import type {ImageResizeMode} from './ImageResizeMode';
 import type {ImageSource} from './ImageSource';
-import type {Node, Ref} from 'react';
+import type {ElementRef, Node, RefSetter} from 'react';
 
 export type ImageLoadEvent = SyntheticEvent<
-  $ReadOnly<{|
-    source: $ReadOnly<{|
+  $ReadOnly<{
+    source: $ReadOnly<{
       width: number,
       height: number,
       uri: string,
-    |}>,
-  |}>,
+    }>,
+  }>,
 >;
 
-type IOSImageProps = $ReadOnly<{|
+type IOSImageProps = $ReadOnly<{
   /**
    * A static image to display while loading the image source.
    *
@@ -51,18 +52,34 @@ type IOSImageProps = $ReadOnly<{|
    * See https://reactnative.dev/docs/image#onprogress
    */
   onProgress?: ?(
-    event: SyntheticEvent<$ReadOnly<{|loaded: number, total: number|}>>,
+    event: SyntheticEvent<$ReadOnly<{loaded: number, total: number}>>,
   ) => void,
-|}>;
+}>;
 
-type AndroidImageProps = $ReadOnly<{|
-  loadingIndicatorSource?: ?(number | $ReadOnly<{|uri: string|}>),
+type AndroidImageProps = $ReadOnly<{
+  loadingIndicatorSource?: ?(number | $ReadOnly<{uri: string}>),
   progressiveRenderingEnabled?: ?boolean,
   fadeDuration?: ?number,
-|}>;
 
-export type ImageProps = {|
-  ...$Diff<ViewProps, $ReadOnly<{|style: ?ViewStyleProp|}>>,
+  /**
+   * The mechanism that should be used to resize the image when the image's
+   * dimensions differ from the image view's dimensions. Defaults to `'auto'`.
+   * See https://reactnative.dev/docs/image#resizemethod-android
+   */
+  resizeMethod?: ?('auto' | 'resize' | 'scale' | 'none'),
+
+  /**
+   * When the `resizeMethod` is set to `resize`, the destination dimensions are
+   * multiplied by this value. The `scale` method is used to perform the
+   * remainder of the resize.
+   * This is used to produce higher quality images when resizing to small dimensions.
+   * Defaults to 1.0.
+   */
+  resizeMultiplier?: ?number,
+}>;
+
+export type ImageProps = $ReadOnly<{
+  ...$Diff<ViewProps, $ReadOnly<{style: ?ViewStyleProp}>>,
   ...IOSImageProps,
   ...AndroidImageProps,
 
@@ -147,9 +164,9 @@ export type ImageProps = {|
    */
   onError?: ?(
     event: SyntheticEvent<
-      $ReadOnly<{|
+      $ReadOnly<{
         error: string,
-      |}>,
+      }>,
     >,
   ) => void,
 
@@ -182,11 +199,6 @@ export type ImageProps = {|
    * See https://reactnative.dev/docs/image#onloadstart
    */
   onLoadStart?: ?() => void,
-
-  /**
-   * See https://reactnative.dev/docs/image#resizemethod
-   */
-  resizeMethod?: ?('auto' | 'resize' | 'scale'),
 
   /**
    * The image source (either a remote URL or a local file resource).
@@ -223,7 +235,7 @@ export type ImageProps = {|
    *
    * See https://reactnative.dev/docs/image#resizemode
    */
-  resizeMode?: ?('cover' | 'contain' | 'stretch' | 'repeat' | 'center'),
+  resizeMode?: ?ImageResizeMode,
 
   /**
    * A unique identifier for this element to be used in UI Automation
@@ -255,9 +267,9 @@ export type ImageProps = {|
    */
   srcSet?: ?string,
   children?: empty,
-|};
+}>;
 
-export type ImageBackgroundProps = $ReadOnly<{|
+export type ImageBackgroundProps = $ReadOnly<{
   ...ImageProps,
   children?: Node,
 
@@ -280,5 +292,5 @@ export type ImageBackgroundProps = $ReadOnly<{|
    *
    * See https://reactnative.dev/docs/imagebackground#imageref
    */
-  imageRef?: Ref<Image>,
-|}>;
+  imageRef?: RefSetter<ElementRef<Image>>,
+}>;

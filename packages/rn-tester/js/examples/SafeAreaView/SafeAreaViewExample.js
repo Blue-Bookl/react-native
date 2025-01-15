@@ -11,7 +11,6 @@
 'use strict';
 
 const React = require('react');
-
 const {
   Button,
   DeviceInfo,
@@ -24,9 +23,9 @@ const {
 
 class SafeAreaViewExample extends React.Component<
   {...},
-  {|
+  {
     modalVisible: boolean,
-  |},
+  },
 > {
   state: {modalVisible: boolean} = {
     modalVisible: false,

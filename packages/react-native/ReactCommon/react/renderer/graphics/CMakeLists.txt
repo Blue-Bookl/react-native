@@ -12,11 +12,10 @@ add_compile_options(
         -std=c++20
         -Wall
         -Wpedantic
-        -Wno-gnu-zero-variadic-macro-arguments
         -DLOG_TAG=\"Fabric\")
 
 file(GLOB react_render_graphics_SRC CONFIGURE_DEPENDS *.cpp)
-add_library(react_render_graphics SHARED ${react_render_graphics_SRC})
+add_library(react_render_graphics OBJECT ${react_render_graphics_SRC})
 
 target_include_directories(react_render_graphics
         PUBLIC
@@ -24,4 +23,10 @@ target_include_directories(react_render_graphics
           ${CMAKE_CURRENT_SOURCE_DIR}/platform/android/
         )
 
-target_link_libraries(react_render_graphics glog fb fbjni folly_runtime react_debug react_utils)
+target_link_libraries(react_render_graphics
+        glog
+        fbjni
+        folly_runtime
+        react_debug
+        react_utils
+)

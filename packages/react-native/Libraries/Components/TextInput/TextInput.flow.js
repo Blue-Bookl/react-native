@@ -8,7 +8,7 @@
  * @format
  */
 
-import type {HostComponent} from '../../Renderer/shims/ReactNativeTypes';
+import type {HostInstance} from '../../Renderer/shims/ReactNativeTypes';
 import type {
   PressEvent,
   ScrollEvent,
@@ -22,76 +22,75 @@ import {
   type ViewStyleProp,
 } from '../../StyleSheet/StyleSheet';
 import * as React from 'react';
-type ComponentRef = React.ElementRef<HostComponent<mixed>>;
 
 type ReactRefSetter<T> = {current: null | T, ...} | ((ref: null | T) => mixed);
 
 export type ChangeEvent = SyntheticEvent<
-  $ReadOnly<{|
+  $ReadOnly<{
     eventCount: number,
     target: number,
     text: string,
-  |}>,
+  }>,
 >;
 
 export type TextInputEvent = SyntheticEvent<
-  $ReadOnly<{|
+  $ReadOnly<{
     eventCount: number,
     previousText: string,
-    range: $ReadOnly<{|
+    range: $ReadOnly<{
       start: number,
       end: number,
-    |}>,
+    }>,
     target: number,
     text: string,
-  |}>,
+  }>,
 >;
 
 export type ContentSizeChangeEvent = SyntheticEvent<
-  $ReadOnly<{|
+  $ReadOnly<{
     target: number,
-    contentSize: $ReadOnly<{|
+    contentSize: $ReadOnly<{
       width: number,
       height: number,
-    |}>,
-  |}>,
+    }>,
+  }>,
 >;
 
 type TargetEvent = SyntheticEvent<
-  $ReadOnly<{|
+  $ReadOnly<{
     target: number,
-  |}>,
+  }>,
 >;
 
 export type BlurEvent = TargetEvent;
 export type FocusEvent = TargetEvent;
 
-type Selection = $ReadOnly<{|
+type Selection = $ReadOnly<{
   start: number,
   end: number,
-|}>;
+}>;
 
 export type SelectionChangeEvent = SyntheticEvent<
-  $ReadOnly<{|
+  $ReadOnly<{
     selection: Selection,
     target: number,
-  |}>,
+  }>,
 >;
 
 export type KeyPressEvent = SyntheticEvent<
-  $ReadOnly<{|
+  $ReadOnly<{
     key: string,
     target?: ?number,
     eventCount?: ?number,
-  |}>,
+  }>,
 >;
 
 export type EditingEvent = SyntheticEvent<
-  $ReadOnly<{|
+  $ReadOnly<{
     eventCount: number,
     text: string,
     target: number,
-  |}>,
+  }>,
 >;
 
 type DataDetectorTypesType =
@@ -198,7 +197,12 @@ export type TextContentType =
   | 'birthdate'
   | 'birthdateDay'
   | 'birthdateMonth'
-  | 'birthdateYear';
+  | 'birthdateYear'
+  | 'cellularEID'
+  | 'cellularIMEI'
+  | 'dateTime'
+  | 'flightNumber'
+  | 'shipmentTrackingNumber';
 
 export type enterKeyHintType =
   | 'enter'
@@ -211,7 +215,13 @@ export type enterKeyHintType =
 
 type PasswordRules = string;
 
-type IOSProps = $ReadOnly<{|
+type IOSProps = $ReadOnly<{
+  /**
+   * If true, the keyboard shortcuts (undo/redo and copy buttons) are disabled. The default value is false.
+   * @platform ios
+   */
+  disableKeyboardShortcuts?: ?boolean,
+
   /**
    * When the clear button should appear on the right side of the text view.
    * This property is supported only for single-line TextInput component.
@@ -261,6 +271,12 @@ type IOSProps = $ReadOnly<{|
    * @platform ios
    */
   inputAccessoryViewID?: ?string,
+
+  /**
+   * An optional label that overrides the default input accessory view button label.
+   * @platform ios
+   */
+  inputAccessoryViewButtonLabel?: ?string,
 
   /**
    * Determines the color of the keyboard.
@@ -313,6 +329,19 @@ type IOSProps = $ReadOnly<{|
   lineBreakStrategyIOS?: ?('none' | 'standard' | 'hangul-word' | 'push-out'),
 
   /**
+   * Set line break mode on iOS.
+   * @platform ios
+   */
+  lineBreakModeIOS?: ?(
+    | 'wordWrapping'
+    | 'char'
+    | 'clip'
+    | 'head'
+    | 'middle'
+    | 'tail'
+  ),
+
+  /**
    * If `false`, the iOS system will not insert an extra space after a paste operation
    * neither delete one or two spaces after a cut or delete operation.
    *
@@ -321,9 +350,9 @@ type IOSProps = $ReadOnly<{|
    * @platform ios
    */
   smartInsertDelete?: ?boolean,
-|}>;
+}>;
 
-type AndroidProps = $ReadOnly<{|
+type AndroidProps = $ReadOnly<{
   /**
    * When provided it will set the color of the cursor (or "caret") in the component.
    * Unlike the behavior of `selectionColor` the cursor color will be set independently
@@ -331,6 +360,14 @@ type AndroidProps = $ReadOnly<{|
    * @platform android
    */
   cursorColor?: ?ColorValue,
+
+  /**
+   * When provided it will set the color of the selection handles when highlighting text.
+   * Unlike the behavior of `selectionColor` the handle color will be set independently
+   * from the color of the text selection box.
+   * @platform android
+   */
+  selectionHandleColor?: ?ColorValue,
 
   /**
    * When `false`, if there is a small amount of space available around a text input
@@ -407,10 +444,10 @@ type AndroidProps = $ReadOnly<{|
    * @platform android
    */
   underlineColorAndroid?: ?ColorValue,
-|}>;
+}>;
 
-export type Props = $ReadOnly<{|
-  ...$Diff<ViewProps, $ReadOnly<{|style: ?ViewStyleProp|}>>,
+export type Props = $ReadOnly<{
+  ...$Diff<ViewProps, $ReadOnly<{style: ?ViewStyleProp}>>,
   ...IOSProps,
   ...AndroidProps,
 
@@ -600,9 +637,7 @@ export type Props = $ReadOnly<{|
    */
   editable?: ?boolean,
 
-  forwardedRef?: ?ReactRefSetter<
-    React.ElementRef<HostComponent<mixed>> & ImperativeMethods,
-  >,
+  forwardedRef?: ?ReactRefSetter<HostInstance & ImperativeMethods>,
 
   /**
    * `enterKeyHint` defines what action label (or icon) to present for the enter key on virtual keyboards.
@@ -865,10 +900,10 @@ export type Props = $ReadOnly<{|
    * The start and end of the text input's selection. Set start and end to
    * the same value to position the cursor.
    */
-  selection?: ?$ReadOnly<{|
+  selection?: ?$ReadOnly<{
     start: number,
     end?: ?number,
-  |}>,
+  }>,
 
   /**
    * The highlight and cursor color of the text input.
@@ -943,14 +978,14 @@ export type Props = $ReadOnly<{|
    * unwanted edits without flicker.
    */
   value?: ?Stringish,
-|}>;
+}>;
 
-type ImperativeMethods = $ReadOnly<{|
+type ImperativeMethods = $ReadOnly<{
   clear: () => void,
   isFocused: () => boolean,
-  getNativeRef: () => ?React.ElementRef<HostComponent<mixed>>,
+  getNativeRef: () => ?HostInstance,
   setSelection: (start: number, end: number) => void,
-|}>;
+}>;
 
 /**
  * A foundational component for inputting text into the app via a
@@ -1063,22 +1098,18 @@ type ImperativeMethods = $ReadOnly<{|
  * or control this param programmatically with native code.
  *
  */
-type InternalTextInput = (props: Props) => React.Node;
+type InternalTextInput = component(
+  ref: React.RefSetter<$ReadOnly<{...HostInstance, ...ImperativeMethods}>>,
+  ...Props
+);
 
-export type TextInputComponentStatics = $ReadOnly<{|
-  State: $ReadOnly<{|
-    currentlyFocusedInput: () => ?ComponentRef,
+export type TextInputComponentStatics = $ReadOnly<{
+  State: $ReadOnly<{
+    currentlyFocusedInput: () => ?HostInstance,
     currentlyFocusedField: () => ?number,
-    focusTextInput: (textField: ?ComponentRef) => void,
-    blurTextInput: (textField: ?ComponentRef) => void,
-  |}>,
-|}>;
+    focusTextInput: (textField: ?HostInstance) => void,
+    blurTextInput: (textField: ?HostInstance) => void,
+  }>,
+}>;
 
-export type TextInputType = React.AbstractComponent<
-  React.ElementConfig<InternalTextInput>,
-  $ReadOnly<{|
-    ...React.ElementRef<HostComponent<mixed>>,
-    ...ImperativeMethods,
-  |}>,
-> &
-  TextInputComponentStatics;
+export type TextInputType = InternalTextInput & TextInputComponentStatics;

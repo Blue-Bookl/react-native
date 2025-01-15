@@ -87,7 +87,7 @@ function flipNewArchFlagForAndroid(
   // Gradle.properties
   const gradlePropertiesPath = path.join(
     cwd,
-    '/packages/react-native/template/android/gradle.properties',
+    '/packages/helloworld/android/gradle.properties',
   );
   backupPath.push(
     replaceContentsOfFile(
@@ -101,7 +101,9 @@ function flipNewArchFlagForAndroid(
 }
 // ===============
 
-module.exports = removeNewArchFlags;
+module.exports = {
+  removeNewArchFlags,
+};
 
 if (require.main === module) {
   removeNewArchFlags();

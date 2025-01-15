@@ -29,9 +29,10 @@ EDEN_SAFE_MV="mv"
 if [ -x "$(command -v eden)" ]; then
   pushd "$THIS_DIR"
 
-  # Detect if we are in an EdenFS checkout
-  if [[ "$OSTYPE" == "darwin"* ]] && eden info; then
-    EDEN_SAFE_MV="cp -R -X"
+  # Detect if we are in an EdenFS checkout with `eden info` (we ignore the output as it creates noise on CI/IDE logs)
+  # Also be sure to use /bin/cp in case users have GNU coreutils installed which is incompatible with -X
+  if [[ "$OSTYPE" == "darwin"* ]] && eden info 2>/dev/null; then
+    EDEN_SAFE_MV="/bin/cp -R -X"
   fi
 
   popd >/dev/null
@@ -60,7 +61,7 @@ else
   if [ "$OSTYPE" = "msys" ] || [ "$OSTYPE" = "cygwin" ]; then
     tar cf - --exclude='*.lock' "$CODEGEN_DIR" | (cd "$TMP_DIR" && tar xvf - );
   else
-    cp -R "$CODEGEN_DIR/." "$TMP_DIR";
+    /bin/cp -R "$CODEGEN_DIR/." "$TMP_DIR";
   fi
 
   pushd "$TMP_DIR" >/dev/null

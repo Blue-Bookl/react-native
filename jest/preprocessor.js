@@ -12,16 +12,31 @@
 
 'use strict';
 
-const metroBabelRegister = require('metro-babel-register');
-const nullthrows = require('nullthrows');
-const createCacheKeyFunction =
-  require('@jest/create-cache-key-function').default;
-
+// eslint-disable-next-line lint/sort-imports
 const {
-  transformSync: babelTransformSync,
   transformFromAstSync: babelTransformFromAstSync,
+  transformSync: babelTransformSync,
 } = require('@babel/core');
 const generate = require('@babel/generator').default;
+const createCacheKeyFunction =
+  require('@jest/create-cache-key-function').default;
+const metroBabelRegister = require('metro-babel-register');
+const nullthrows = require('nullthrows');
+
+if (process.env.FBSOURCE_ENV === '1') {
+  // If we're running in the Meta-internal monorepo, use the central Babel
+  // registration, which registers all of the relevant source directories
+  // including Metro's root.
+  //
+  // $FlowExpectedError[cannot-resolve-module] - Won't resolve in OSS
+  require('@fb-tools/babel-register');
+} else {
+  // Register Babel to allow local packages to be loaded from source
+  require('../scripts/build/babel-register').registerForMonorepo();
+}
+
+const transformer = require('@react-native/metro-babel-transformer');
+const metroTransformPlugins = require('metro-transform-plugins');
 
 // Files matching this pattern will be transformed with the Node JS Babel
 // transformer, rather than with the React Native Babel transformer. Scripts
@@ -32,9 +47,15 @@ const nodeFiles = /[\\/]metro(?:-[^/]*)[\\/]/;
 // hook. This is used below to configure babelTransformSync under Jest.
 const {only: _, ...nodeBabelOptions} = metroBabelRegister.config([]);
 
-// Register Babel to allow the transformer itself to be loaded from source.
-require('../scripts/build/babel-register').registerForMonorepo();
-const transformer = require('@react-native/metro-babel-transformer');
+// Set BUILD_EXCLUDE_BABEL_REGISTER (see ../scripts/build/babel-register.js) to
+// prevent inline Babel registration in code under test, normally required when
+// running from source, but not in combination with the Jest transformer.
+const babelPluginPreventBabelRegister = [
+  require.resolve('babel-plugin-transform-define'),
+  {
+    'process.env.BUILD_EXCLUDE_BABEL_REGISTER': true,
+  },
+];
 
 module.exports = {
   process(src /*: string */, file /*: string */) /*: {code: string, ...} */ {
@@ -44,6 +65,10 @@ module.exports = {
         filename: file,
         sourceType: 'script',
         ...nodeBabelOptions,
+        plugins: [
+          ...(nodeBabelOptions.plugins ?? []),
+          babelPluginPreventBabelRegister,
+        ],
         ast: false,
       });
     }
@@ -74,8 +99,8 @@ module.exports = {
       ast: true,
       retainLines: true,
       plugins: [
-        // TODO(moti): Replace with require('metro-transform-plugins').inlineRequiresPlugin when available in OSS
-        require('babel-preset-fbjs/plugins/inline-requires'),
+        metroTransformPlugins.inlineRequiresPlugin,
+        babelPluginPreventBabelRegister,
       ],
       sourceType: 'module',
     });

@@ -11,7 +11,6 @@
 'use strict';
 
 const React = require('react');
-
 const {
   ScrollView,
   StyleSheet,
@@ -138,7 +137,7 @@ exports.description =
 exports.examples = [
   {
     title: 'Simple scroll view',
-    render: function (): React.Element<typeof ScrollViewSimpleExample> {
+    render(): React.MixedElement {
       return <ScrollViewSimpleExample />;
     },
   },

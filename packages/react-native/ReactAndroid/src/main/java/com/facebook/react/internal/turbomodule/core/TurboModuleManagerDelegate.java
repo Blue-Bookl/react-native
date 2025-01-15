@@ -8,13 +8,15 @@
 package com.facebook.react.internal.turbomodule.core;
 
 import androidx.annotation.Nullable;
+import com.facebook.infer.annotation.Nullsafe;
 import com.facebook.jni.HybridData;
 import com.facebook.proguard.annotations.DoNotStrip;
 import com.facebook.react.bridge.NativeModule;
-import com.facebook.react.internal.turbomodule.core.interfaces.TurboModule;
-import java.util.ArrayList;
+import com.facebook.react.turbomodule.core.interfaces.TurboModule;
+import java.util.Collections;
 import java.util.List;
 
+@Nullsafe(Nullsafe.Mode.LOCAL)
 public abstract class TurboModuleManagerDelegate {
   @DoNotStrip
   @SuppressWarnings("unused")
@@ -29,6 +31,11 @@ public abstract class TurboModuleManagerDelegate {
   protected TurboModuleManagerDelegate() {
     maybeLoadOtherSoLibraries();
     mHybridData = initHybrid();
+  }
+
+  protected TurboModuleManagerDelegate(HybridData hybridData) {
+    maybeLoadOtherSoLibraries();
+    mHybridData = hybridData;
   }
 
   /**
@@ -51,10 +58,11 @@ public abstract class TurboModuleManagerDelegate {
 
   public boolean unstable_isLegacyModuleRegistered(String moduleName) {
     return false;
-  };
+  }
+  ;
 
   public List<String> getEagerInitModuleNames() {
-    return new ArrayList<>();
+    return Collections.emptyList();
   }
 
   /** Can the TurboModule system create legacy modules? */
@@ -62,18 +70,7 @@ public abstract class TurboModuleManagerDelegate {
     return false;
   }
 
-  /**
-   * Should the TurboModule system treat all turbo native modules as though they were legacy
-   * modules? This method is for testing purposes only.
-   */
-  public boolean unstable_shouldRouteTurboModulesThroughLegacyModuleInterop() {
-    return false;
-  }
-
-  /* Can TurboModule methods that return void execute on the JS thread? */
-  public boolean unstable_enableSyncVoidMethods() {
-    return false;
-  }
-
+  // TODO(T171231381): Consider removing this method: could we just use the static initializer
+  // of derived classes instead?
   protected synchronized void maybeLoadOtherSoLibraries() {}
 }

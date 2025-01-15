@@ -7,11 +7,12 @@
 
 package com.facebook.react.modules.deviceinfo
 
+import com.facebook.react.bridge.BridgeReactContext
 import com.facebook.react.bridge.JavaOnlyMap
-import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReactTestHelper
 import com.facebook.react.bridge.WritableMap
+import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsForTests
 import com.facebook.react.uimanager.DisplayMetricsHolder
 import junit.framework.TestCase
 import org.assertj.core.api.Assertions
@@ -32,11 +33,12 @@ class DeviceInfoModuleTest : TestCase() {
   private lateinit var deviceInfoModule: DeviceInfoModule
   private lateinit var fakePortraitDisplayMetrics: WritableMap
   private lateinit var fakeLandscapeDisplayMetrics: WritableMap
-  private lateinit var reactContext: ReactApplicationContext
+  private lateinit var reactContext: BridgeReactContext
   private lateinit var displayMetricsHolder: MockedStatic<DisplayMetricsHolder>
 
   @Before
   public override fun setUp() {
+    ReactNativeFeatureFlagsForTests.setUp()
     fakePortraitDisplayMetrics = JavaOnlyMap()
     fakePortraitDisplayMetrics.putInt("width", 100)
     fakePortraitDisplayMetrics.putInt("height", 200)
@@ -45,7 +47,7 @@ class DeviceInfoModuleTest : TestCase() {
     fakeLandscapeDisplayMetrics.putInt("height", 100)
 
     displayMetricsHolder = mockStatic(DisplayMetricsHolder::class.java)
-    reactContext = spy(ReactApplicationContext(RuntimeEnvironment.getApplication()))
+    reactContext = spy(BridgeReactContext(RuntimeEnvironment.getApplication()))
     val catalystInstanceMock = ReactTestHelper.createMockCatalystInstance()
     reactContext.initializeWithInstance(catalystInstanceMock)
     deviceInfoModule = DeviceInfoModule(reactContext)
